@@ -1,9 +1,9 @@
 export interface User {
   username: string;
-  wishes: Wish[] | null;
+  wishes?: Wish[] | Wish;
 }
 
-interface Wish {
+export interface Wish {
   title: string;
   link?: string;
   taken: boolean;
