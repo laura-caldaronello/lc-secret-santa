@@ -44,6 +44,26 @@ export class ServiceService {
       .subscribe(); //giusto fare qui la subscribe? o va fatta quando si istanzia un certo componente?
   }
 
+  autoLogin() {
+    const userData = JSON.parse(<string>localStorage.getItem('userData'));
+    if (!userData) {
+      return;
+    }
+    const user = new User(
+      userData.email,
+      userData.id,
+      userData._token,
+      new Date(userData._tokenExpirationDate)
+    );
+    if (user.token) {
+      this.user.next(user);
+      const expirationDuration =
+        user.tokenExpirationDate.getTime() - new Date().getTime();
+      this.autoLogout(expirationDuration);
+      this.getWisher(user.email.replace('@email.com', ''));
+    }
+  }
+
   postWisher(data: AuthResponseData) {
     this.http
       .post<Wisher>(
@@ -58,12 +78,12 @@ export class ServiceService {
             username: data.email.replace('@email.com', ''),
           };
         }),
-        tap((resp) => this.getWisher(resp)) //side effect
+        tap((resp) => this.getWisher(resp.username)) //side effect
       )
       .subscribe(); //giusto fare qui la subscribe? o va fatta quando si istanzia un certo componente?
   }
 
-  getWisher(inputWisher: Wisher) {
+  getWisher(wisherUsername: string) {
     this.http
       .get<Wisher[] | Wisher | null>(
         'https://lc-secret-santa-default-rtdb.europe-west1.firebasedatabase.app/wishers.json'
@@ -74,7 +94,7 @@ export class ServiceService {
             return null; //se non esistono wishers, ritorno null
           }
           if ((<Wisher>resp).username) {
-            if ((<Wisher>resp).username === inputWisher.username) {
+            if ((<Wisher>resp).username === wisherUsername) {
               return <Wisher>resp; //se esiste uno wisher ed è quello giusto, lo ritorno
             } else {
               return null; //se esite uno wisher ma non è quello giusto, ritorno null
@@ -83,7 +103,7 @@ export class ServiceService {
           //ultimo caso: trasformo da oggetto ad array
           const arr = Object.values(resp);
           const rightWisher = (<Wisher[]>arr).find(
-            (wisher) => wisher.username === inputWisher.username
+            (wisher) => wisher.username === wisherUsername
           );
           return !!rightWisher ? <Wisher>rightWisher : null; //se esitono più wisher e c'è quello giusto, ritorno quello, altrimenti se ci sono più wisher ma non c'è quello giusto ritorno null
         }),
