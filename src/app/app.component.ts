@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
 import { ServiceService } from './service.service';
-import { User } from './user.model';
+import { Wisher } from './models/wisher.model';
 
 @Component({
   selector: 'app-root',
@@ -10,14 +10,14 @@ import { User } from './user.model';
 })
 export class AppComponent implements OnInit {
   title = 'lc-secret-santa';
-  user: User | null = null;
+  wisher: Wisher | null = null;
 
   constructor(private service: ServiceService) {}
 
   ngOnInit(): void {
-    this.service.user.subscribe((resp) => (this.user = resp));
-    if (this.user) {
-      this.service.getUser(this.user); //se entro essendo già loggato, con le info della sessione, allora carico già i wishes
+    this.service.wisher.subscribe((resp) => (this.wisher = resp));
+    if (this.wisher) {
+      this.service.getWisher(this.wisher); //se entro essendo già loggato, con le info della sessione, allora carico già i wishes
     }
   }
 }

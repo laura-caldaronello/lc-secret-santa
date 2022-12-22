@@ -11,5 +11,6 @@
     formControlName="password"
     placeholder="password"
   />
-  <button mat-button>Submit</button>
+  <button mat-button>{{ signup ? "Sign up" : "Login" }}</button>
 </form>
+<button (click)="signup = !signup">change</button>

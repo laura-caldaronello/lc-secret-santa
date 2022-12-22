@@ -5,7 +5,7 @@ import {
   FormGroup,
   Validators,
 } from '@angular/forms';
-import { ServiceService } from '../service.service';
+import { ServiceService } from '../../service.service';
 
 export interface AuthResponseData {
   kind: string;
@@ -24,6 +24,7 @@ export interface AuthResponseData {
 })
 export class AuthComponent implements OnInit {
   authForm: FormGroup;
+  signup: boolean = true;
 
   constructor(private fb: FormBuilder, private service: ServiceService) {
     this.authForm = this.fb.group({
@@ -39,7 +40,7 @@ export class AuthComponent implements OnInit {
 
   onSubmit(form: FormGroup) {
     if (form.valid) {
-      this.service.signup(this.authForm);
+      this.service.signupOrLogin(this.authForm, this.signup);
     } else {
       alert('error');
     }

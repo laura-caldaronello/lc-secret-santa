@@ -5,8 +5,8 @@ import { HttpClientModule } from '@angular/common/http';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { AuthComponent } from './auth/auth.component';
-import { WishesComponent } from './wishes/wishes.component';
+import { AuthComponent } from './components/auth/auth.component';
+import { WishesComponent } from './components/wishes/wishes.component';
 
 @NgModule({
   declarations: [AppComponent, AuthComponent, WishesComponent],

@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { Wish } from '../user.model';
+import { Wish } from '../../models/wisher.model';
 
 @Component({
   selector: 'app-wishes',

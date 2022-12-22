@@ -1,6 +1,6 @@
 <app-auth></app-auth>
 <app-wishes
-  *ngIf="user"
-  [name]="user.username"
-  [wishes]="user.wishes ? user.wishes : null"
+  *ngIf="wisher"
+  [name]="wisher.username"
+  [wishes]="wisher.wishes ? wisher.wishes : null"
 ></app-wishes>
