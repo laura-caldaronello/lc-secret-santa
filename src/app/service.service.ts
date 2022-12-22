@@ -13,6 +13,7 @@ import { User } from './models/user.model';
 })
 export class ServiceService {
   wisher = new BehaviorSubject<Wisher | null>(null);
+  friends = new BehaviorSubject<Wisher[] | null>(null);
   user = new BehaviorSubject<User | null>(null);
   private tokenExpirationTimer: any;
 
@@ -36,16 +37,16 @@ export class ServiceService {
         catchError(this.handleError),
         tap((resp) => {
           //side effects: inserisco l'elemento nel database utenti+wishes e memorizzo la sessione
-          this.putWisher(resp);
+          this.postWisher(resp);
           this.handleAuth(resp);
         })
       )
       .subscribe(); //giusto fare qui la subscribe? o va fatta quando si istanzia un certo componente?
   }
 
-  putWisher(data: AuthResponseData) {
+  postWisher(data: AuthResponseData) {
     this.http
-      .put<Wisher>(
+      .post<Wisher>(
         'https://lc-secret-santa-default-rtdb.europe-west1.firebasedatabase.app/wishers.json',
         {
           username: data.email.replace('@email.com', ''),
@@ -53,9 +54,9 @@ export class ServiceService {
       )
       .pipe(
         map((resp) => {
-          let parsed = { ...resp };
-          parsed.username = parsed.username.replace('@email.com', '');
-          return parsed;
+          return {
+            username: data.email.replace('@email.com', ''),
+          };
         }),
         tap((resp) => this.getWisher(resp)) //side effect
       )
@@ -70,22 +71,52 @@ export class ServiceService {
       .pipe(
         map((resp) => {
           if (!resp) {
-            return resp; //se non esistono wishers, ritorno null
+            return null; //se non esistono wishers, ritorno null
           }
           if ((<Wisher>resp).username) {
             if ((<Wisher>resp).username === inputWisher.username) {
-              return resp; //se esiste uno wisher ed è quello giusto, lo ritorno
+              return <Wisher>resp; //se esiste uno wisher ed è quello giusto, lo ritorno
             } else {
               return null; //se esite uno wisher ma non è quello giusto, ritorno null
             }
           }
-          const rightWisher = (<Wisher[]>resp).find(
+          //ultimo caso: trasformo da oggetto ad array
+          const arr = Object.values(resp);
+          const rightWisher = (<Wisher[]>arr).find(
             (wisher) => wisher.username === inputWisher.username
           );
-          return !!rightWisher ? rightWisher : null; //se esitono più wisher e c'è quello giusto, ritorno quello, altrimenti se ci sono più wisher ma non c'è quello giusto ritorno null
+          return !!rightWisher ? <Wisher>rightWisher : null; //se esitono più wisher e c'è quello giusto, ritorno quello, altrimenti se ci sono più wisher ma non c'è quello giusto ritorno null
+        }),
+        tap((resp) => {
+          if (resp) {
+            this.getFriends(resp); //side effect: chiamo anche i friends
+          }
         })
       )
       .subscribe((resp) => this.wisher.next(<Wisher | null>resp));
+  }
+
+  getFriends(inputWisher: Wisher) {
+    this.http
+      .get<Wisher[] | Wisher | null>(
+        'https://lc-secret-santa-default-rtdb.europe-west1.firebasedatabase.app/wishers.json'
+      )
+      .pipe(
+        map((resp) => {
+          if (!resp) {
+            return resp; //se non esistono wishers, ritorno null
+          }
+          if ((<Wisher>resp).username) {
+            return null; //se esiste un solo wisher o è se stesso e quindi non un amico, oppure è un altro e non va bene, perchè ci deve essere anche sè stesso
+          }
+          //ultimo caso: trasformo da oggetto ad array
+          const arr = Object.values(resp);
+          return (<Wisher[]>arr).filter(
+            (wisher) => wisher.username !== inputWisher.username //l'ultima possibilità è ci sia effettivamente un array, allora sicuramente qualcosa deve tornare e posso filtrarlo per tutti quelli che non sono il wisher loggato
+          );
+        })
+      )
+      .subscribe((resp) => this.friends.next(<Wisher[] | null>resp));
   }
 
   handleAuth(resData: AuthResponseData) {

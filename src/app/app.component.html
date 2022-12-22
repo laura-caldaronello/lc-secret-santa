@@ -4,3 +4,4 @@
   [name]="wisher.username"
   [wishes]="wisher.wishes ? wisher.wishes : null"
 ></app-wishes>
+<app-friends *ngIf="wisher && friends" [friends]="friends"></app-friends>
