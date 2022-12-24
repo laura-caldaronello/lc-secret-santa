@@ -1,0 +1,5 @@
+<form [formGroup]="wishForm" (ngSubmit)="onSubmit(wishForm)">
+  <input matInput type="text" formControlName="name" placeholder="name" />
+  <input matInput type="text" formControlName="link" placeholder="link" />
+  <button mat-button>send</button>
+</form>

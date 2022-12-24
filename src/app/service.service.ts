@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { environment } from 'src/environments/environment';
 import { AuthResponseData } from './components/auth/auth.component';
-import { Wisher } from './models/wisher.model';
+import { Wish, Wisher } from './models/wisher.model';
 import { catchError, map, tap } from 'rxjs/operators';
 import { BehaviorSubject, throwError } from 'rxjs';
 import { User } from './models/user.model';
@@ -36,9 +36,8 @@ export class ServiceService {
       .pipe(
         catchError(this.handleError),
         tap((resp) => {
-          //side effects: inserisco l'elemento nel database utenti+wishes e memorizzo la sessione
+          //side effects: inserisco l'elemento nel database utenti+wishes
           this.postWisher(resp);
-          this.handleAuth(resp);
         })
       )
       .subscribe(); //giusto fare qui la subscribe? o va fatta quando si istanzia un certo componente?
@@ -53,7 +52,8 @@ export class ServiceService {
       userData.email,
       userData.id,
       userData._token,
-      new Date(userData._tokenExpirationDate)
+      new Date(userData._tokenExpirationDate),
+      userData.dbKey
     );
     if (user.token) {
       this.user.next(user);
@@ -66,7 +66,7 @@ export class ServiceService {
 
   postWisher(data: AuthResponseData) {
     this.http
-      .post<Wisher>(
+      .post<{ name: string }>(
         'https://lc-secret-santa-default-rtdb.europe-west1.firebasedatabase.app/wishers.json',
         {
           username: data.email.replace('@email.com', ''),
@@ -75,10 +75,14 @@ export class ServiceService {
       .pipe(
         map((resp) => {
           return {
+            dbKey: resp.name,
             username: data.email.replace('@email.com', ''),
           };
         }),
-        tap((resp) => this.getWisher(resp.username)) //side effect
+        tap((resp) => {
+          this.handleAuth(data, resp.dbKey); //memorizzo l'utente
+          this.getWisher(resp.username);
+        })
       )
       .subscribe(); //giusto fare qui la subscribe? o va fatta quando si istanzia un certo componente?
   }
@@ -116,6 +120,10 @@ export class ServiceService {
       .subscribe((resp) => this.wisher.next(<Wisher | null>resp));
   }
 
+  postWish(wish: Wish) {
+    console.log(wish);
+  }
+
   getFriends(inputWisher: Wisher) {
     this.http
       .get<Wisher[] | Wisher | null>(
@@ -139,7 +147,7 @@ export class ServiceService {
       .subscribe((resp) => this.friends.next(<Wisher[] | null>resp));
   }
 
-  handleAuth(resData: AuthResponseData) {
+  handleAuth(resData: AuthResponseData, dbKey: string) {
     const expirationDate = new Date(
       new Date().getTime() + +resData.expiresIn * 1000
     );
@@ -147,9 +155,11 @@ export class ServiceService {
       resData.email,
       resData.localId,
       resData.idToken,
-      expirationDate
+      expirationDate,
+      dbKey
     );
     this.user.next(user);
+    console.log(user);
     localStorage.setItem('userData', JSON.stringify(user));
     const expirationDuration =
       user.tokenExpirationDate.getTime() - new Date().getTime();

@@ -8,9 +8,10 @@ import { AppComponent } from './app.component';
 import { AuthComponent } from './components/auth/auth.component';
 import { WishesComponent } from './components/wishes/wishes.component';
 import { FriendsComponent } from './components/friends/friends.component';
+import { NewWishComponent } from './components/new-wish/new-wish.component';
 
 @NgModule({
-  declarations: [AppComponent, AuthComponent, WishesComponent, FriendsComponent],
+  declarations: [AppComponent, AuthComponent, WishesComponent, FriendsComponent, NewWishComponent],
   imports: [
     BrowserModule,
     AppRoutingModule,
