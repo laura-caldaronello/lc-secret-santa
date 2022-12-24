@@ -1,6 +1,10 @@
 <p>Ciao {{ name }}!</p>
 <div *ngIf="wishes; else elseTemplate">
   <p>Ecco la tua lista:</p>
+  <div *ngFor="let wish of wishes">
+    <p>{{wish.title}}</p>
+    <p *ngIf="wish.link">{{wish.link}}</p>
+  </div>
 </div>
 <ng-template #elseTemplate>
   <p>Non hai ancora elementi nella tua lista!</p>

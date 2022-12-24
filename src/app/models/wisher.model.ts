@@ -1,6 +1,6 @@
 export interface Wisher {
   username: string;
-  wishes?: Wish[] | Wish;
+  wishes?: Wish[];
 }
 export class Wish {
   constructor(

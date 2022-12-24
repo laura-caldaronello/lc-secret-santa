@@ -53,20 +53,20 @@ export class ServiceService {
       userData.id,
       userData._token,
       new Date(userData._tokenExpirationDate),
-      userData.dbKey
+      userData._dbKey
     );
     if (user.token) {
       this.user.next(user);
       const expirationDuration =
         user.tokenExpirationDate.getTime() - new Date().getTime();
       this.autoLogout(expirationDuration);
-      this.getWisher(user.email.replace('@email.com', ''));
+      this.getWisherAndFriends(user.email.replace('@email.com', ''));
     }
   }
 
   postWisher(data: AuthResponseData) {
     this.http
-      .post<{ name: string }>(
+      .post<{ name: string }>( //la put sovrascrive tutto
         'https://lc-secret-santa-default-rtdb.europe-west1.firebasedatabase.app/wishers.json',
         {
           username: data.email.replace('@email.com', ''),
@@ -81,70 +81,85 @@ export class ServiceService {
         }),
         tap((resp) => {
           this.handleAuth(data, resp.dbKey); //memorizzo l'utente
-          this.getWisher(resp.username);
+          this.getWisherAndFriends(resp.username);
         })
       )
       .subscribe(); //giusto fare qui la subscribe? o va fatta quando si istanzia un certo componente?
   }
 
-  getWisher(wisherUsername: string) {
+  updateWisher(wish: Wish) {
+    const dbKey = this.user.value ? this.user.value.dbKey : null;
+    var wisher = this.wisher.value;
+    if (wisher) {
+      if (wisher.wishes) {
+        wisher.wishes.push(wish);
+      } else {
+        wisher.wishes = [wish];
+      }
+    }
+    const body = { [<string>dbKey]: wisher };
+    if (dbKey && wisher) {
+      this.http
+        .patch<{ [dynamicKey: string]: Wisher }>(
+          'https://lc-secret-santa-default-rtdb.europe-west1.firebasedatabase.app/wishers.json',
+          body
+        )
+        .subscribe((resp) => {
+          const wisher = resp[dbKey];
+          this.wisher.next(wisher);
+        });
+    }
+  }
+
+  getWisherAndFriends(wisherUsername: string) {
     this.http
-      .get<Wisher[] | Wisher | null>(
+      .get<{ [dynamicKey: string]: Wisher } | null>(
         'https://lc-secret-santa-default-rtdb.europe-west1.firebasedatabase.app/wishers.json'
       )
       .pipe(
         map((resp) => {
           if (!resp) {
-            return null; //se non esistono wishers, ritorno null
+            return null;
           }
-          if ((<Wisher>resp).username) {
-            if ((<Wisher>resp).username === wisherUsername) {
-              return <Wisher>resp; //se esiste uno wisher ed è quello giusto, lo ritorno
-            } else {
-              return null; //se esite uno wisher ma non è quello giusto, ritorno null
-            }
+          return Object.values(<{ [dynamicKey: string]: Wisher }>resp);
+        })
+      )
+      .subscribe((resp) => {
+        //con la risposta definisco il wisher...
+        var wisher: Wisher | null = null;
+        if (!resp) {
+          wisher = null; //se non esistono wishers, ritorno null
+        } else if (resp && resp.length === 1) {
+          if (resp[0].username === wisherUsername) {
+            wisher = resp[0]; //se esiste uno wisher ed è quello giusto, lo ritorno
+          } else {
+            wisher = null; //se esite uno wisher ma non è quello giusto, ritorno null
           }
-          //ultimo caso: trasformo da oggetto ad array
-          const arr = Object.values(resp);
-          const rightWisher = (<Wisher[]>arr).find(
+        }
+        //ultimo caso: trasformo da oggetto ad array
+        else if (resp && resp.length > 1) {
+          const rightWisher = resp.find(
             (wisher) => wisher.username === wisherUsername
           );
-          return !!rightWisher ? <Wisher>rightWisher : null; //se esitono più wisher e c'è quello giusto, ritorno quello, altrimenti se ci sono più wisher ma non c'è quello giusto ritorno null
-        }),
-        tap((resp) => {
-          if (resp) {
-            this.getFriends(resp); //side effect: chiamo anche i friends
-          }
-        })
-      )
-      .subscribe((resp) => this.wisher.next(<Wisher | null>resp));
-  }
+          wisher = !!rightWisher ? rightWisher : null; //se esitono più wisher e c'è quello giusto, ritorno quello, altrimenti se ci sono più wisher ma non c'è quello giusto ritorno null
+        }
+        this.wisher.next(wisher);
 
-  postWish(wish: Wish) {
-    console.log(wish);
-  }
-
-  getFriends(inputWisher: Wisher) {
-    this.http
-      .get<Wisher[] | Wisher | null>(
-        'https://lc-secret-santa-default-rtdb.europe-west1.firebasedatabase.app/wishers.json'
-      )
-      .pipe(
-        map((resp) => {
-          if (!resp) {
-            return resp; //se non esistono wishers, ritorno null
-          }
-          if ((<Wisher>resp).username) {
-            return null; //se esiste un solo wisher o è se stesso e quindi non un amico, oppure è un altro e non va bene, perchè ci deve essere anche sè stesso
-          }
-          //ultimo caso: trasformo da oggetto ad array
-          const arr = Object.values(resp);
-          return (<Wisher[]>arr).filter(
-            (wisher) => wisher.username !== inputWisher.username //l'ultima possibilità è ci sia effettivamente un array, allora sicuramente qualcosa deve tornare e posso filtrarlo per tutti quelli che non sono il wisher loggato
+        //...e i friends
+        var friends: Wisher[] | null = null;
+        if (!resp) {
+          friends = null; //se non esistono wishers, ritorno null
+        } else if (resp && resp.length === 1) {
+          friends = null; //se esiste un solo wisher o è se stesso e quindi non un amico, oppure è un altro e non va bene, perchè ci deve essere anche sè stesso
+        }
+        //ultimo caso: trasformo da oggetto ad array
+        else if (resp && resp.length > 1) {
+          friends = resp.filter(
+            (wisher) => wisher.username !== wisherUsername //l'ultima possibilità è ci sia effettivamente un array, allora sicuramente qualcosa deve tornare e posso filtrarlo per tutti quelli che non sono il wisher loggato
           );
-        })
-      )
-      .subscribe((resp) => this.friends.next(<Wisher[] | null>resp));
+        }
+        this.friends.next(friends);
+      });
   }
 
   handleAuth(resData: AuthResponseData, dbKey: string) {

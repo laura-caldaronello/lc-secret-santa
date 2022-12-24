@@ -8,7 +8,7 @@ import { Wish } from '../../models/wisher.model';
 })
 export class WishesComponent implements OnInit {
   @Input() name!: string;
-  @Input() wishes!: Wish[] | Wish | null;
+  @Input() wishes!: Wish[] | null;
 
   constructor() {}
 

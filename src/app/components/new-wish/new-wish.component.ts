@@ -29,7 +29,7 @@ export class NewWishComponent implements OnInit {
     if (form.valid) {
       const value = form.value;
       const body = new Wish(value.name, false, null, value.link);
-      this.service.postWish(body);
+      this.service.updateWisher(body);
     } else {
       alert('error');
     }
