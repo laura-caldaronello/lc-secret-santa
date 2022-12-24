@@ -1,8 +1,7 @@
 <app-auth></app-auth>
 <ng-container *ngIf="wisher">
   <app-wishes
-    [name]="wisher.username"
-    [wishes]="wisher.wishes ? wisher.wishes : null"
+    [wisher]="wisher"
     [friend]="false"
   ></app-wishes>
   <app-new-wish></app-new-wish>

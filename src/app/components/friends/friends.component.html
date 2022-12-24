@@ -1,7 +1,6 @@
 <p>Amici:</p>
 <app-wishes
   *ngFor="let friend of friends"
-  [name]="friend.username"
-  [wishes]="friend.wishes ? friend.wishes : null"
+  [wisher]="friend"
   [friend]="true"
 ></app-wishes>

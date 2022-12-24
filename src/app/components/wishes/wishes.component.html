@@ -2,10 +2,10 @@
 <p *ngIf="friend">il tuo amico {{name}}</p>
 <div *ngIf="wishes; else elseTemplate">
   <p>Ecco la tua lista:</p>
-  <div *ngFor="let wish of wishes">
+  <div *ngFor="let wish of wishes; let i = index">
     <p>{{wish.title}}</p>
     <p *ngIf="wish.link">{{wish.link}}</p>
-    <button *ngIf="friend" (click)="takeWish(wish, name)">take</button>
+    <button *ngIf="friend" (click)="takeWish(i, wisher)" [disabled]="wish.taken">take</button>
   </div>
 </div>
 <ng-template #elseTemplate>

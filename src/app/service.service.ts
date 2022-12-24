@@ -102,7 +102,21 @@ export class ServiceService {
     }
   }
 
-  takeWish(friendName: string, wish: Wish) {}
+  takeWish(wishIndex: number, friend: Wisher) {
+    if (friend.wishes && this.wisher.value) {
+      friend.wishes[wishIndex].taken = true;
+      friend.wishes[wishIndex].taker = this.wisher.value.username;
+      const body = { [<string>friend.dbKey]: friend };
+      this.http
+        .patch<{ [dynamicKey: string]: Wisher }>(
+          'https://lc-secret-santa-default-rtdb.europe-west1.firebasedatabase.app/wishers.json',
+          body
+        )
+        .subscribe((resp) => {
+          console.log(resp);
+        });
+    }
+  }
 
   getWisherAndFriends(wisherUsername: string) {
     this.http

@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { ServiceService } from 'src/app/service.service';
-import { Wish } from '../../models/wisher.model';
+import { Wish, Wisher } from '../../models/wisher.model';
 
 @Component({
   selector: 'app-wishes',
@@ -8,15 +8,19 @@ import { Wish } from '../../models/wisher.model';
   styleUrls: ['./wishes.component.scss'],
 })
 export class WishesComponent implements OnInit {
-  @Input() name!: string;
-  @Input() wishes!: Wish[] | null;
+  @Input() wisher!: Wisher;
   @Input() friend!: boolean;
+  name!: string;
+  wishes: Wish[] | undefined;
 
   constructor(private service: ServiceService) {}
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.name = this.wisher.username;
+    this.wishes = this.wisher.wishes;
+  }
 
-  takeWish(wish: Wish, name: string) {
-    //this.service.takeWish(wish);
+  takeWish(wishIndex: number, friend: Wisher) {
+    this.service.takeWish(wishIndex, friend);
   }
 }
