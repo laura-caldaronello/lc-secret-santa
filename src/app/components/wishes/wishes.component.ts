@@ -1,4 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
+import { ServiceService } from 'src/app/service.service';
 import { Wish } from '../../models/wisher.model';
 
 @Component({
@@ -9,8 +10,13 @@ import { Wish } from '../../models/wisher.model';
 export class WishesComponent implements OnInit {
   @Input() name!: string;
   @Input() wishes!: Wish[] | null;
+  @Input() friend!: boolean;
 
-  constructor() {}
+  constructor(private service: ServiceService) {}
 
   ngOnInit(): void {}
+
+  takeWish(wish: Wish, name: string) {
+    //this.service.takeWish(wish);
+  }
 }

@@ -1,6 +1,7 @@
 export interface Wisher {
   username: string;
   wishes?: Wish[];
+  dbKey?: string;
 }
 export class Wish {
   constructor(

@@ -3,8 +3,7 @@ export class User {
     public email: string,
     public id: string,
     private _token: string,
-    private _tokenExpirationDate: Date,
-    private _dbKey: string
+    private _tokenExpirationDate: Date
   ) {}
 
   get token() {
@@ -16,9 +15,5 @@ export class User {
 
   get tokenExpirationDate() {
     return this._tokenExpirationDate;
-  }
-
-  get dbKey() {
-    return this._dbKey;
   }
 }
