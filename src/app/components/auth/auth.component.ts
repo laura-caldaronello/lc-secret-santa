@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import {
-  FormBuilder,
-  FormControl,
-  FormGroup,
+  UntypedFormBuilder,
+  UntypedFormControl,
+  UntypedFormGroup,
   Validators,
 } from '@angular/forms';
 import { ServiceService } from '../../service.service';
@@ -23,13 +23,13 @@ export interface AuthResponseData {
   styleUrls: ['./auth.component.scss'],
 })
 export class AuthComponent implements OnInit {
-  authForm: FormGroup;
+  authForm: UntypedFormGroup;
   signup: boolean = true;
 
-  constructor(private fb: FormBuilder, private service: ServiceService) {
+  constructor(private fb: UntypedFormBuilder, private service: ServiceService) {
     this.authForm = this.fb.group({
-      username: new FormControl('', Validators.required),
-      password: new FormControl('', [
+      username: new UntypedFormControl('', Validators.required),
+      password: new UntypedFormControl('', [
         Validators.required,
         Validators.minLength(8),
       ]),
@@ -38,7 +38,7 @@ export class AuthComponent implements OnInit {
 
   ngOnInit(): void {}
 
-  onSubmit(form: FormGroup) {
+  onSubmit(form: UntypedFormGroup) {
     if (form.valid) {
       this.service.signupOrLogin(this.authForm, this.signup);
     } else {

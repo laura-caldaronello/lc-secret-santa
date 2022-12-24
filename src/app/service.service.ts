@@ -1,6 +1,6 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { FormGroup } from '@angular/forms';
+import { UntypedFormGroup } from '@angular/forms';
 import { environment } from 'src/environments/environment';
 import { AuthResponseData } from './components/auth/auth.component';
 import { Wisher } from './models/wisher.model';
@@ -19,7 +19,7 @@ export class ServiceService {
 
   constructor(private http: HttpClient) {}
 
-  signupOrLogin(form: FormGroup, signup: boolean) {
+  signupOrLogin(form: UntypedFormGroup, signup: boolean) {
     const action = signup ? 'signUp' : 'signInWithPassword';
     this.http
       .post<AuthResponseData>(
