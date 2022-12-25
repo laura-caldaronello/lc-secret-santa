@@ -20,7 +20,24 @@ export class WishesComponent implements OnInit {
     this.wishes = this.wisher.wishes;
   }
 
+  iCanTake(wishIndex: number) {
+    if (this.wishes && this.service.wisher.value) {
+      return (
+        //o non è preso, o è preso dall'utente loggato
+        !this.wishes[wishIndex].taken ||
+        (this.wishes[wishIndex].taken &&
+          this.wishes[wishIndex].taker === this.service.wisher.value.username)
+      );
+    } else {
+      return false;
+    }
+  }
+
   takeWish(wishIndex: number, friend: Wisher) {
-    this.service.takeWish(wishIndex, friend);
+    this.service.takeUntakeWish(true, wishIndex, friend);
+  }
+
+  untakeWish(wishIndex: number, friend: Wisher) {
+    this.service.takeUntakeWish(false, wishIndex, friend);
   }
 }

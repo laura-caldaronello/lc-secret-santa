@@ -20,6 +20,7 @@ export class ServiceService {
   constructor(private http: HttpClient) {}
 
   signupOrLogin(form: UntypedFormGroup, signup: boolean) {
+    this.logout();
     const action = signup ? 'signUp' : 'signInWithPassword';
     this.http
       .post<AuthResponseData>(
@@ -102,19 +103,22 @@ export class ServiceService {
     }
   }
 
-  takeWish(wishIndex: number, friend: Wisher) {
+  takeUntakeWish(take: boolean, wishIndex: number, friend: Wisher) {
     if (friend.wishes && this.wisher.value) {
-      friend.wishes[wishIndex].taken = true;
-      friend.wishes[wishIndex].taker = this.wisher.value.username;
+      if (take) {
+        friend.wishes[wishIndex].taken = true;
+        friend.wishes[wishIndex].taker = this.wisher.value.username;
+      } else {
+        friend.wishes[wishIndex].taken = false;
+        friend.wishes[wishIndex].taker = null;
+      }
       const body = { [<string>friend.dbKey]: friend };
       this.http
         .patch<{ [dynamicKey: string]: Wisher }>(
           'https://lc-secret-santa-default-rtdb.europe-west1.firebasedatabase.app/wishers.json',
           body
         )
-        .subscribe((resp) => {
-          console.log(resp);
-        });
+        .subscribe();
     }
   }
 
@@ -186,7 +190,6 @@ export class ServiceService {
       expirationDate
     );
     this.user.next(user);
-    console.log(user);
     localStorage.setItem('userData', JSON.stringify(user));
     const expirationDuration =
       user.tokenExpirationDate.getTime() - new Date().getTime();
