@@ -95,7 +95,6 @@ export class ServiceService {
   updateWisher(wish: Wish) {
     var wisher = this.wisher.value;
     const dbKey = wisher ? wisher.dbKey : null;
-    console.log(wisher, dbKey);
     if (wisher && dbKey) {
       if (wisher.wishes) {
         wisher.wishes.push(wish);
@@ -167,10 +166,8 @@ export class ServiceService {
               return { ...item[1], dbKey: item[0] };
             })
             .find((wisher) => wisher.username === wisherUsername);
-          console.log('165: ', rightWisher);
           wisher = !!rightWisher ? rightWisher : null; //se esitono più wisher e c'è quello giusto, ritorno quello, altrimenti se ci sono più wisher ma non c'è quello giusto ritorno null
         }
-        console.log('167: ', wisher);
         this.wisher.next(wisher);
 
         //...e i friends

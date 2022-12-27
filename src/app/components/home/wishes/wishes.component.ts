@@ -1,4 +1,10 @@
-import { Component, Input, OnInit } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnChanges,
+  OnInit,
+  SimpleChanges,
+} from '@angular/core';
 import { ServiceService } from 'src/app/service.service';
 import { Wish, Wisher } from '../../../models/wisher.model';
 
@@ -7,7 +13,7 @@ import { Wish, Wisher } from '../../../models/wisher.model';
   templateUrl: './wishes.component.html',
   styleUrls: ['./wishes.component.scss'],
 })
-export class WishesComponent implements OnInit {
+export class WishesComponent implements OnInit, OnChanges {
   @Input() wisher!: Wisher;
   @Input() friend!: boolean;
   name!: string;
@@ -15,9 +21,13 @@ export class WishesComponent implements OnInit {
 
   constructor(private service: ServiceService) {}
 
-  ngOnInit(): void {
-    this.name = this.wisher.username;
-    this.wishes = this.wisher.wishes;
+  ngOnInit(): void {}
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes.wisher) {
+      this.name = this.wisher.username;
+      this.wishes = this.wisher.wishes;
+    }
   }
 
   iCanTake(wishIndex: number) {
