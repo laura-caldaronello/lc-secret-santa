@@ -44,7 +44,11 @@ export class ServiceService {
         tap((resp) => {
           //side effects: inserisco l'elemento nel database utenti+wishes e memorizzo l'utente
           this.handleAuth(resp); //memorizzo l'utente
-          this.postWisher(resp);
+          if (signup) {
+            this.postWisher(resp);
+          } else {
+            this.getWisherAndFriends(resp.email.replace('@email.com', '')); //che sarebbe comunque fatto in postwisher
+          }
         })
       )
       .subscribe((resp) => {
@@ -91,6 +95,7 @@ export class ServiceService {
   updateWisher(wish: Wish) {
     var wisher = this.wisher.value;
     const dbKey = wisher ? wisher.dbKey : null;
+    console.log(wisher, dbKey);
     if (wisher && dbKey) {
       if (wisher.wishes) {
         wisher.wishes.push(wish);
@@ -149,7 +154,8 @@ export class ServiceService {
           wisher = null; //se non esistono wishers, ritorno null
         } else if (resp && resp.length === 1) {
           if (resp[0][1].username === wisherUsername) {
-            wisher = resp[0][1]; //se esiste uno wisher ed è quello giusto, lo ritorno
+            wisher = resp[0][1];
+            wisher.dbKey = resp[0][0]; //se esiste uno wisher ed è quello giusto, lo ritorno
           } else {
             wisher = null; //se esite uno wisher ma non è quello giusto, ritorno null
           }
@@ -161,8 +167,10 @@ export class ServiceService {
               return { ...item[1], dbKey: item[0] };
             })
             .find((wisher) => wisher.username === wisherUsername);
+          console.log('165: ', rightWisher);
           wisher = !!rightWisher ? rightWisher : null; //se esitono più wisher e c'è quello giusto, ritorno quello, altrimenti se ci sono più wisher ma non c'è quello giusto ritorno null
         }
+        console.log('167: ', wisher);
         this.wisher.next(wisher);
 
         //...e i friends
