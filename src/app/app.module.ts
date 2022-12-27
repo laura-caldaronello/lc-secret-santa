@@ -11,6 +11,7 @@ import { FriendsComponent } from './components/home/friends/friends.component';
 import { NewWishComponent } from './components/home/new-wish/new-wish.component';
 import { HomeComponent } from './components/home/home.component';
 import { AuthGuardService } from './auth-guard.service';
+import { HeaderComponent } from './components/header/header.component';
 
 @NgModule({
   declarations: [
@@ -20,6 +21,7 @@ import { AuthGuardService } from './auth-guard.service';
     FriendsComponent,
     NewWishComponent,
     HomeComponent,
+    HeaderComponent,
   ],
   imports: [
     BrowserModule,
