@@ -1,9 +1,1 @@
-<app-auth></app-auth>
-<ng-container *ngIf="wisher">
-  <app-wishes
-    [wisher]="wisher"
-    [friend]="false"
-  ></app-wishes>
-  <app-new-wish></app-new-wish>
-</ng-container>
-<app-friends *ngIf="wisher && friends" [friends]="friends"></app-friends>
+<router-outlet></router-outlet>

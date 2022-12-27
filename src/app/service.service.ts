@@ -7,6 +7,7 @@ import { Wish, Wisher } from './models/wisher.model';
 import { catchError, map, tap } from 'rxjs/operators';
 import { BehaviorSubject, throwError } from 'rxjs';
 import { User } from './models/user.model';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root',
@@ -17,7 +18,11 @@ export class ServiceService {
   user = new BehaviorSubject<User | null>(null);
   private tokenExpirationTimer: any;
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+    private route: ActivatedRoute
+  ) {}
 
   signupOrLogin(form: UntypedFormGroup, signup: boolean) {
     this.logout();
@@ -37,11 +42,14 @@ export class ServiceService {
       .pipe(
         catchError(this.handleError),
         tap((resp) => {
-          //side effects: inserisco l'elemento nel database utenti+wishes
+          //side effects: inserisco l'elemento nel database utenti+wishes e memorizzo l'utente
+          this.handleAuth(resp); //memorizzo l'utente
           this.postWisher(resp);
         })
       )
-      .subscribe(); //giusto fare qui la subscribe? o va fatta quando si istanzia un certo componente?
+      .subscribe((resp) => {
+        this.router.navigate(['']);
+      }); //giusto fare qui la subscribe? o va fatta quando si istanzia un certo componente?
   }
 
   autoLogin() {
@@ -74,7 +82,6 @@ export class ServiceService {
       )
       .pipe(
         tap((resp) => {
-          this.handleAuth(data); //memorizzo l'utente
           this.getWisherAndFriends(data.email.replace('@email.com', ''));
         })
       )
