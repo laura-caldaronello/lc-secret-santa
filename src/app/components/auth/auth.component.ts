@@ -1,10 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import {
   UntypedFormBuilder,
   UntypedFormControl,
   UntypedFormGroup,
   Validators,
 } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { ServiceService } from '../../service.service';
 
 export interface AuthResponseData {
@@ -22,11 +24,16 @@ export interface AuthResponseData {
   templateUrl: './auth.component.html',
   styleUrls: ['./auth.component.scss'],
 })
-export class AuthComponent implements OnInit {
+export class AuthComponent implements OnInit, OnDestroy {
   authForm: UntypedFormGroup;
-  signup: boolean = true;
+  signup!: boolean;
+  subscription!: Subscription;
 
-  constructor(private fb: UntypedFormBuilder, private service: ServiceService) {
+  constructor(
+    private fb: UntypedFormBuilder,
+    private service: ServiceService,
+    private route: ActivatedRoute
+  ) {
     this.authForm = this.fb.group({
       username: new UntypedFormControl('', Validators.required),
       password: new UntypedFormControl('', [
@@ -36,7 +43,16 @@ export class AuthComponent implements OnInit {
     });
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.subscription = this.route.queryParams.subscribe((resp) => {
+      if (resp.type === 'signup') {
+        this.signup = true;
+      }
+      if (resp.type === 'login') {
+        this.signup = false;
+      }
+    });
+  }
 
   onSubmit(form: UntypedFormGroup) {
     if (form.valid) {
@@ -44,5 +60,9 @@ export class AuthComponent implements OnInit {
     } else {
       alert('error');
     }
+  }
+
+  ngOnDestroy(): void {
+    this.subscription.unsubscribe();
   }
 }

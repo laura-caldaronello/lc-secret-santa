@@ -1,0 +1,29 @@
+@import '../../../variables.scss';
+
+.flex {
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    .logo {
+        font-weight: bold;
+        font-size: 1.3em;
+        color: $color-1;
+    }
+    .right {
+        display: flex;
+        align-items: center;
+        .field {
+            transform: scale(0.8);
+            mat-label {
+                font-size: 1.2em;
+            }
+            ::ng-deep .mat-mdc-form-field-subscript-wrapper {
+                height: 0;
+            }
+            ::ng-deep .mdc-text-field--filled:not(.mdc-text-field--disabled) {
+                background-color: white;
+            }
+        }
+    }
+}

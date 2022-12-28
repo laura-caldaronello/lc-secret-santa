@@ -213,7 +213,7 @@ export class ServiceService {
     this.wisher.next(null);
     this.friends.next(null);
     localStorage.removeItem('userData');
-    this.router.navigate(['/auth']);
+    this.router.navigate(['auth'], { queryParams: { type: 'login' } });
     if (this.tokenExpirationTimer) {
       clearTimeout(this.tokenExpirationTimer);
     }

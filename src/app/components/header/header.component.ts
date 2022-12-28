@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { BehaviorSubject } from 'rxjs';
-import { User } from 'src/app/models/user.model';
+import { Wisher } from 'src/app/models/wisher.model';
 import { ServiceService } from 'src/app/service.service';
 
 @Component({
@@ -10,13 +9,14 @@ import { ServiceService } from 'src/app/service.service';
   styleUrls: ['./header.component.scss'],
 })
 export class HeaderComponent implements OnInit {
-  user!: User | null;
+  title = 'secret santa';
+  wisher!: Wisher | null;
 
   constructor(private service: ServiceService, private router: Router) {}
 
   ngOnInit(): void {
-    this.service.user.subscribe((resp) => {
-      this.user = resp;
+    this.service.wisher.subscribe((resp) => {
+      this.wisher = resp;
     });
   }
 

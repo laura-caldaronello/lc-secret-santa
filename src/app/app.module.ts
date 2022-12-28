@@ -2,6 +2,10 @@ import { NgModule } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 import { HttpClientModule } from '@angular/common/http';
+import { MatSelectModule } from '@angular/material/select';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -28,6 +32,10 @@ import { HeaderComponent } from './components/header/header.component';
     AppRoutingModule,
     ReactiveFormsModule,
     HttpClientModule,
+    MatSelectModule,
+    BrowserAnimationsModule,
+    MatIconModule,
+    MatButtonModule,
   ],
   providers: [AuthGuardService],
   bootstrap: [AppComponent],
