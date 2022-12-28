@@ -1,5 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { Wisher } from 'src/app/models/wisher.model';
+import { ServiceService } from 'src/app/service.service';
 
 @Component({
   selector: 'app-friends',
@@ -7,9 +8,11 @@ import { Wisher } from 'src/app/models/wisher.model';
   styleUrls: ['./friends.component.scss'],
 })
 export class FriendsComponent implements OnInit {
-  @Input() friends!: Wisher[];
+  friends!: Wisher[] | null;
 
-  constructor() {}
+  constructor(private service: ServiceService) {}
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.service.friends.subscribe((resp) => (this.friends = resp));
+  }
 }

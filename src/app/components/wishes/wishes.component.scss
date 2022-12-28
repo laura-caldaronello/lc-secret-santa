@@ -1,0 +1,10 @@
+@import "../../../variables.scss";
+
+.wish {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px;
+  background-color: $color-2-05;
+  margin-bottom: 5px;
+}

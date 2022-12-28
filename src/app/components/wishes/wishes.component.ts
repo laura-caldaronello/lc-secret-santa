@@ -5,8 +5,8 @@ import {
   OnInit,
   SimpleChanges,
 } from '@angular/core';
+import { Wisher, Wish } from 'src/app/models/wisher.model';
 import { ServiceService } from 'src/app/service.service';
-import { Wish, Wisher } from '../../../models/wisher.model';
 
 @Component({
   selector: 'app-wishes',

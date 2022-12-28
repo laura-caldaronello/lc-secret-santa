@@ -1,0 +1,27 @@
+<p *ngIf="friend">il tuo amico {{ name }}</p>
+<div *ngIf="wishes; else elseTemplate">
+  <p *ngIf="!friend">Ecco la tua lista:</p>
+  <div class="wish" *ngFor="let wish of wishes; let i = index">
+    <div>
+      <p>{{ wish.title }}</p>
+      <p *ngIf="wish.link">{{ wish.link }}</p>
+    </div>
+    <div>
+      <mat-slide-toggle
+        *ngIf="friend"
+        class="example-margin"
+        color="blue"
+        [checked]="wish.taken && iCanTake(i)"
+        [disabled]="wish.taken && !iCanTake(i)"
+        (change)="wish.taken ? untakeWish(i, wisher) : takeWish(i, wisher)"
+      >
+        Slide me!
+      </mat-slide-toggle>
+      <p *ngIf="wish.taken && !friend">preso!</p>
+    </div>
+  </div>
+</div>
+<ng-template #elseTemplate>
+  <p>Non hai ancora elementi nella tua lista!</p>
+</ng-template>
+<hr />

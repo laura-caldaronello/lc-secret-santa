@@ -1,0 +1,8 @@
+<ng-container *ngIf="friends">
+  <p>Amici:</p>
+  <app-wishes
+    *ngFor="let friend of friends"
+    [wisher]="friend"
+    [friend]="true"
+  ></app-wishes>
+</ng-container>

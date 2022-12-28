@@ -1,14 +1,47 @@
 <header class="flex">
-    <div class="logo">{{title | uppercase}}</div>
-    <div class="right">
-        <mat-icon>notifications_none</mat-icon>
-        <mat-form-field *ngIf="wisher" class="field">
-            <mat-select class="select" [placeholder]="'Ciao ' + wisher.username + '!'">
-                <mat-option>profilo</mat-option>
-                <mat-option (click)="logout()">logout</mat-option>
-            </mat-select>
-        </mat-form-field>
-        <a mat-button *ngIf="!wisher" class="btn btn-primary" [routerLink]="['auth']" [queryParams]="{type: 'signup'}">signup</a>
-        <a mat-button *ngIf="!wisher" class="btn btn-primary" [routerLink]="['auth']" [queryParams]="{type: 'login'}">login</a>
-    </div>
+  <div class="left">
+    <p class="logo">{{ title | uppercase }}</p>
+    <a
+      mat-button
+      *ngIf="wisher"
+      class="btn btn-primary"
+      [routerLink]="['my-list']"
+      >my list</a
+    >
+    <a
+      mat-button
+      *ngIf="wisher"
+      class="btn btn-primary"
+      [routerLink]="['friends']"
+      >friends</a
+    >
+  </div>
+  <div class="right">
+    <mat-icon>notifications_none</mat-icon>
+    <mat-form-field *ngIf="wisher" class="field">
+      <mat-select
+        class="select"
+        [placeholder]="'Ciao ' + wisher.username + '!'"
+      >
+        <mat-option>profilo</mat-option>
+        <mat-option (click)="logout()">logout</mat-option>
+      </mat-select>
+    </mat-form-field>
+    <a
+      mat-button
+      *ngIf="!wisher"
+      class="btn btn-primary"
+      [routerLink]="['auth']"
+      [queryParams]="{ type: 'signup' }"
+      >signup</a
+    >
+    <a
+      mat-button
+      *ngIf="!wisher"
+      class="btn btn-primary"
+      [routerLink]="['auth']"
+      [queryParams]="{ type: 'login' }"
+      >login</a
+    >
+  </div>
 </header>

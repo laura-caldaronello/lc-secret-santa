@@ -6,16 +6,17 @@ import { MatSelectModule } from '@angular/material/select';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { AuthComponent } from './components/auth/auth.component';
-import { WishesComponent } from './components/home/wishes/wishes.component';
-import { FriendsComponent } from './components/home/friends/friends.component';
-import { NewWishComponent } from './components/home/new-wish/new-wish.component';
-import { HomeComponent } from './components/home/home.component';
+import { FriendsComponent } from './components/friends/friends.component';
 import { AuthGuardService } from './auth-guard.service';
 import { HeaderComponent } from './components/header/header.component';
+import { WishesComponent } from './components/wishes/wishes.component';
+import { NewWishComponent } from './components/my-area/new-wish/new-wish.component';
+import { MyListComponent } from './components/my-area/my-list/my-list.component';
 
 @NgModule({
   declarations: [
@@ -24,8 +25,8 @@ import { HeaderComponent } from './components/header/header.component';
     WishesComponent,
     FriendsComponent,
     NewWishComponent,
-    HomeComponent,
     HeaderComponent,
+    MyListComponent,
   ],
   imports: [
     BrowserModule,
@@ -36,6 +37,7 @@ import { HeaderComponent } from './components/header/header.component';
     BrowserAnimationsModule,
     MatIconModule,
     MatButtonModule,
+    MatSlideToggleModule,
   ],
   providers: [AuthGuardService],
   bootstrap: [AppComponent],

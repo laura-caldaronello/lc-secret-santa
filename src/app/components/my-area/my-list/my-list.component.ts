@@ -3,11 +3,11 @@ import { Wisher } from 'src/app/models/wisher.model';
 import { ServiceService } from 'src/app/service.service';
 
 @Component({
-  selector: 'app-home',
-  templateUrl: './home.component.html',
-  styleUrls: ['./home.component.scss'],
+  selector: 'app-my-list',
+  templateUrl: './my-list.component.html',
+  styleUrls: ['./my-list.component.scss'],
 })
-export class HomeComponent implements OnInit {
+export class MyListComponent implements OnInit {
   wisher: Wisher | null = null;
   friends: Wisher[] | null = null;
 
