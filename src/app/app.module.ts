@@ -7,6 +7,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatExpansionModule } from '@angular/material/expansion';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -38,6 +39,7 @@ import { MyListComponent } from './components/my-area/my-list/my-list.component'
     MatIconModule,
     MatButtonModule,
     MatSlideToggleModule,
+    MatExpansionModule,
   ],
   providers: [AuthGuardService],
   bootstrap: [AppComponent],

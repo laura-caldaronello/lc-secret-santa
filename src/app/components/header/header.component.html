@@ -6,14 +6,14 @@
       *ngIf="wisher"
       class="btn btn-primary"
       [routerLink]="['my-list']"
-      >my list</a
+      >la mia lista</a
     >
     <a
       mat-button
       *ngIf="wisher"
       class="btn btn-primary"
       [routerLink]="['friends']"
-      >friends</a
+      >i miei amici</a
     >
   </div>
   <div class="right">
@@ -23,7 +23,6 @@
         class="select"
         [placeholder]="'Ciao ' + wisher.username + '!'"
       >
-        <mat-option>profilo</mat-option>
         <mat-option (click)="logout()">logout</mat-option>
       </mat-select>
     </mat-form-field>
@@ -33,7 +32,7 @@
       class="btn btn-primary"
       [routerLink]="['auth']"
       [queryParams]="{ type: 'signup' }"
-      >signup</a
+      >iscriviti</a
     >
     <a
       mat-button
@@ -41,7 +40,7 @@
       class="btn btn-primary"
       [routerLink]="['auth']"
       [queryParams]="{ type: 'login' }"
-      >login</a
+      >entra</a
     >
   </div>
 </header>
