@@ -1,7 +1,46 @@
-<p>Ciao {{ name }}!</p>
-<div *ngIf="wishes; else elseTemplate">
-  <p>Ecco la tua lista:</p>
-</div>
-<ng-template #elseTemplate>
-  <p>Non hai ancora elementi nella tua lista!</p>
-</ng-template>
+<mat-expansion-panel *ngIf="friend">
+  <mat-expansion-panel-header>
+    <mat-panel-title>
+      <p>{{ name }}</p>
+    </mat-panel-title>
+  </mat-expansion-panel-header>
+  <div *ngIf="wishes; else elseTemplate">
+    <div class="wish friend-wish" *ngFor="let wish of wishes; let i = index">
+      <div>
+        <p>{{ wish.title }}</p>
+        <p *ngIf="wish.link">{{ wish.link }}</p>
+      </div>
+      <div>
+        <mat-slide-toggle
+          class="example-margin"
+          color="primary"
+          [checked]="wish.taken && iCanTake(i)"
+          [disabled]="wish.taken && !iCanTake(i)"
+          (change)="wish.taken ? untakeWish(i, wisher) : takeWish(i, wisher)"
+        >
+        </mat-slide-toggle>
+      </div>
+    </div>
+  </div>
+  <ng-template #elseTemplate>
+    <p>nessun elemento</p>
+  </ng-template>
+</mat-expansion-panel>
+
+<ng-container *ngIf="!friend">
+  <div *ngIf="wishes; else elseTemplate">
+    <p class="bold">la mia lista</p>
+    <div class="wish my-wish" *ngFor="let wish of wishes; let i = index">
+      <div>
+        <p>{{ wish.title }}</p>
+        <p *ngIf="wish.link">{{ wish.link }}</p>
+      </div>
+      <div>
+        <p *ngIf="wish.taken" class="bold">preso</p>
+      </div>
+    </div>
+  </div>
+  <ng-template #elseTemplate>
+    <p>non hai ancora elementi nella tua lista</p>
+  </ng-template>
+</ng-container>

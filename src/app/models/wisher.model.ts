@@ -1,11 +1,13 @@
 export interface Wisher {
   username: string;
-  wishes?: Wish[] | Wish;
+  wishes?: Wish[];
+  dbKey?: string;
 }
-
-export interface Wish {
-  title: string;
-  link?: string;
-  taken: boolean;
-  taker: string | null;
+export class Wish {
+  constructor(
+    public title: string,
+    public taken: boolean,
+    public taker: string | null,
+    public link?: string
+  ) {}
 }

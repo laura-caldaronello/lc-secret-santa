@@ -1,0 +1,46 @@
+<header class="flex">
+  <div class="left">
+    <p class="logo">{{ title | uppercase }}</p>
+    <a
+      mat-button
+      *ngIf="wisher"
+      class="btn btn-primary"
+      [routerLink]="['my-list']"
+      >la mia lista</a
+    >
+    <a
+      mat-button
+      *ngIf="wisher"
+      class="btn btn-primary"
+      [routerLink]="['friends']"
+      >i miei amici</a
+    >
+  </div>
+  <div class="right">
+    <mat-icon>notifications_none</mat-icon>
+    <mat-form-field *ngIf="wisher" class="field">
+      <mat-select
+        class="select"
+        [placeholder]="'Ciao ' + wisher.username + '!'"
+      >
+        <mat-option (click)="logout()">logout</mat-option>
+      </mat-select>
+    </mat-form-field>
+    <a
+      mat-button
+      *ngIf="!wisher"
+      class="btn btn-primary"
+      [routerLink]="['auth']"
+      [queryParams]="{ type: 'signup' }"
+      >iscriviti</a
+    >
+    <a
+      mat-button
+      *ngIf="!wisher"
+      class="btn btn-primary"
+      [routerLink]="['auth']"
+      [queryParams]="{ type: 'login' }"
+      >entra</a
+    >
+  </div>
+</header>

@@ -1,24 +1,31 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { FormGroup } from '@angular/forms';
+import { UntypedFormGroup } from '@angular/forms';
 import { environment } from 'src/environments/environment';
 import { AuthResponseData } from './components/auth/auth.component';
-import { Wisher } from './models/wisher.model';
+import { Wish, Wisher } from './models/wisher.model';
 import { catchError, map, tap } from 'rxjs/operators';
 import { BehaviorSubject, throwError } from 'rxjs';
 import { User } from './models/user.model';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ServiceService {
   wisher = new BehaviorSubject<Wisher | null>(null);
+  friends = new BehaviorSubject<Wisher[] | null>(null);
   user = new BehaviorSubject<User | null>(null);
   private tokenExpirationTimer: any;
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+    private route: ActivatedRoute
+  ) {}
 
-  signupOrLogin(form: FormGroup, signup: boolean) {
+  signupOrLogin(form: UntypedFormGroup, signup: boolean) {
+    this.logout();
     const action = signup ? 'signUp' : 'signInWithPassword';
     this.http
       .post<AuthResponseData>(
@@ -35,57 +42,153 @@ export class ServiceService {
       .pipe(
         catchError(this.handleError),
         tap((resp) => {
-          //side effects: inserisco l'elemento nel database utenti+wishes e memorizzo la sessione
-          this.putWisher(resp);
-          this.handleAuth(resp);
+          //side effects: inserisco l'elemento nel database utenti+wishes e memorizzo l'utente
+          this.handleAuth(resp); //memorizzo l'utente
+          if (signup) {
+            this.postWisher(resp);
+          } else {
+            this.getWisherAndFriends(resp.email.replace('@email.com', '')); //che sarebbe comunque fatto in postwisher
+          }
         })
       )
-      .subscribe(); //giusto fare qui la subscribe? o va fatta quando si istanzia un certo componente?
+      .subscribe((resp) => {
+        this.router.navigate(['']);
+      }); //giusto fare qui la subscribe? o va fatta quando si istanzia un certo componente?
   }
 
-  putWisher(data: AuthResponseData) {
+  autoLogin() {
+    const userData = JSON.parse(<string>localStorage.getItem('userData'));
+    if (!userData) {
+      return;
+    }
+    const user = new User(
+      userData.email,
+      userData.id,
+      userData._token,
+      new Date(userData._tokenExpirationDate)
+    );
+    if (user.token) {
+      this.user.next(user);
+      const expirationDuration =
+        user.tokenExpirationDate.getTime() - new Date().getTime();
+      this.autoLogout(expirationDuration);
+      this.getWisherAndFriends(user.email.replace('@email.com', ''));
+    }
+  }
+
+  postWisher(data: AuthResponseData) {
     this.http
-      .put<Wisher>(
+      .post<{ name: string }>( //la put sovrascrive tutto
         'https://lc-secret-santa-default-rtdb.europe-west1.firebasedatabase.app/wishers.json',
         {
           username: data.email.replace('@email.com', ''),
         }
       )
       .pipe(
-        map((resp) => {
-          let parsed = { ...resp };
-          parsed.username = parsed.username.replace('@email.com', '');
-          return parsed;
-        }),
-        tap((resp) => this.getWisher(resp)) //side effect
+        tap((resp) => {
+          this.getWisherAndFriends(data.email.replace('@email.com', ''));
+        })
       )
       .subscribe(); //giusto fare qui la subscribe? o va fatta quando si istanzia un certo componente?
   }
 
-  getWisher(inputWisher: Wisher) {
+  updateWisher(wish: Wish) {
+    var wisher = this.wisher.value;
+    const dbKey = wisher ? wisher.dbKey : null;
+    if (wisher && dbKey) {
+      if (wisher.wishes) {
+        wisher.wishes.push(wish);
+      } else {
+        wisher.wishes = [wish];
+      }
+      const body = { [<string>dbKey]: wisher };
+      this.http
+        .patch<{ [dynamicKey: string]: Wisher }>(
+          'https://lc-secret-santa-default-rtdb.europe-west1.firebasedatabase.app/wishers.json',
+          body
+        )
+        .subscribe((resp) => {
+          const wisher = resp[dbKey];
+          this.wisher.next(wisher);
+        });
+    }
+  }
+
+  takeUntakeWish(take: boolean, wishIndex: number, friend: Wisher) {
+    if (friend.wishes && this.wisher.value) {
+      if (take) {
+        friend.wishes[wishIndex].taken = true;
+        friend.wishes[wishIndex].taker = this.wisher.value.username;
+      } else {
+        friend.wishes[wishIndex].taken = false;
+        friend.wishes[wishIndex].taker = null;
+      }
+      const body = { [<string>friend.dbKey]: friend };
+      this.http
+        .patch<{ [dynamicKey: string]: Wisher }>(
+          'https://lc-secret-santa-default-rtdb.europe-west1.firebasedatabase.app/wishers.json',
+          body
+        )
+        .subscribe();
+    }
+  }
+
+  getWisherAndFriends(wisherUsername: string) {
     this.http
-      .get<Wisher[] | Wisher | null>(
+      .get<{ [dynamicKey: string]: Wisher } | null>(
         'https://lc-secret-santa-default-rtdb.europe-west1.firebasedatabase.app/wishers.json'
       )
       .pipe(
         map((resp) => {
           if (!resp) {
-            return resp; //se non esistono wishers, ritorno null
+            return null;
           }
-          if ((<Wisher>resp).username) {
-            if ((<Wisher>resp).username === inputWisher.username) {
-              return resp; //se esiste uno wisher ed è quello giusto, lo ritorno
-            } else {
-              return null; //se esite uno wisher ma non è quello giusto, ritorno null
-            }
-          }
-          const rightWisher = (<Wisher[]>resp).find(
-            (wisher) => wisher.username === inputWisher.username
-          );
-          return !!rightWisher ? rightWisher : null; //se esitono più wisher e c'è quello giusto, ritorno quello, altrimenti se ci sono più wisher ma non c'è quello giusto ritorno null
+          return Object.entries(<{ [dynamicKey: string]: Wisher }>resp);
         })
       )
-      .subscribe((resp) => this.wisher.next(<Wisher | null>resp));
+      .subscribe((resp) => {
+        //con la risposta definisco il wisher...
+        var wisher: Wisher | null = null;
+        if (!resp) {
+          wisher = null; //se non esistono wishers, ritorno null
+        } else if (resp && resp.length === 1) {
+          if (resp[0][1].username === wisherUsername) {
+            wisher = resp[0][1];
+            wisher.dbKey = resp[0][0]; //se esiste uno wisher ed è quello giusto, lo ritorno
+          } else {
+            wisher = null; //se esite uno wisher ma non è quello giusto, ritorno null
+          }
+        }
+        //ultimo caso: trasformo da oggetto ad array
+        else if (resp && resp.length > 1) {
+          const rightWisher = resp
+            .map((item) => {
+              return { ...item[1], dbKey: item[0] };
+            })
+            .find((wisher) => wisher.username === wisherUsername);
+          wisher = !!rightWisher ? rightWisher : null; //se esitono più wisher e c'è quello giusto, ritorno quello, altrimenti se ci sono più wisher ma non c'è quello giusto ritorno null
+        }
+        this.wisher.next(wisher);
+
+        //...e i friends
+        var friends: Wisher[] | null = null;
+        if (!resp) {
+          friends = null; //se non esistono wishers, ritorno null
+        } else if (resp && resp.length === 1) {
+          friends = null; //se esiste un solo wisher o è se stesso e quindi non un amico, oppure è un altro e non va bene, perchè ci deve essere anche sè stesso
+        }
+        //ultimo caso: trasformo da oggetto ad array
+        else if (resp && resp.length > 1) {
+          friends = resp
+            .map((item) => {
+              return { ...item[1], dbKey: item[0] };
+            })
+            .filter(
+              (wisher) => wisher.username !== wisherUsername //l'ultima possibilità è ci sia effettivamente un array, allora sicuramente qualcosa deve tornare e posso filtrarlo per tutti quelli che non sono il wisher loggato
+            );
+        }
+        this.friends.next(friends);
+      });
   }
 
   handleAuth(resData: AuthResponseData) {
@@ -107,7 +210,10 @@ export class ServiceService {
 
   logout() {
     this.user.next(null);
+    this.wisher.next(null);
+    this.friends.next(null);
     localStorage.removeItem('userData');
+    this.router.navigate(['auth'], { queryParams: { type: 'login' } });
     if (this.tokenExpirationTimer) {
       clearTimeout(this.tokenExpirationTimer);
     }

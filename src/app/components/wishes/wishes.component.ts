@@ -1,16 +1,53 @@
-import { Component, Input, OnInit } from '@angular/core';
-import { Wish } from '../../models/wisher.model';
+import {
+  Component,
+  Input,
+  OnChanges,
+  OnInit,
+  SimpleChanges,
+} from '@angular/core';
+import { Wisher, Wish } from 'src/app/models/wisher.model';
+import { ServiceService } from 'src/app/service.service';
 
 @Component({
   selector: 'app-wishes',
   templateUrl: './wishes.component.html',
   styleUrls: ['./wishes.component.scss'],
 })
-export class WishesComponent implements OnInit {
-  @Input() name!: string;
-  @Input() wishes!: Wish[] | Wish | null;
+export class WishesComponent implements OnInit, OnChanges {
+  @Input() wisher!: Wisher;
+  @Input() friend!: boolean;
+  name!: string;
+  wishes: Wish[] | undefined;
 
-  constructor() {}
+  constructor(private service: ServiceService) {}
 
   ngOnInit(): void {}
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes.wisher) {
+      this.name = this.wisher.username;
+      this.wishes = this.wisher.wishes;
+    }
+  }
+
+  iCanTake(wishIndex: number) {
+    if (this.wishes && this.service.wisher.value) {
+      return (
+        //o non è preso, o è preso dall'utente loggato
+        !this.wishes[wishIndex].taken ||
+        (this.wishes[wishIndex].taken &&
+          this.wishes[wishIndex].taker === this.service.wisher.value.username)
+      );
+    } else {
+      return false;
+    }
+  }
+
+  takeWish(wishIndex: number, friend: Wisher) {
+    this.service.takeUntakeWish(true, wishIndex, friend);
+  }
+
+  untakeWish(wishIndex: number, friend: Wisher) {
+    this.service.takeUntakeWish(false, wishIndex, friend);
+  }
 }
