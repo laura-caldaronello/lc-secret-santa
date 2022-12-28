@@ -5,6 +5,7 @@
   <div *ngFor="let wish of wishes; let i = index">
     <p>{{wish.title}}</p>
     <p *ngIf="wish.link">{{wish.link}}</p>
+    <p *ngIf="wish.taken">taken!</p>
     <ng-container *ngIf="friend && iCanTake(i)">
       <button (click)="takeWish(i, wisher)" [disabled]="wish.taken">take</button>
       <button (click)="untakeWish(i, wisher)" [disabled]="!wish.taken">untake</button>

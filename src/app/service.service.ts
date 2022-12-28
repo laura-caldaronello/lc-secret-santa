@@ -210,6 +210,8 @@ export class ServiceService {
 
   logout() {
     this.user.next(null);
+    this.wisher.next(null);
+    this.friends.next(null);
     localStorage.removeItem('userData');
     this.router.navigate(['/auth']);
     if (this.tokenExpirationTimer) {
