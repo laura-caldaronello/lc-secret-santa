@@ -8,6 +8,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatExpansionModule } from '@angular/material/expansion';
+import { MatDialogModule } from '@angular/material/dialog';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -19,7 +20,9 @@ import { WishesComponent } from './components/wishes/wishes.component';
 import { NewWishComponent } from './components/my-area/new-wish/new-wish.component';
 import { MyListComponent } from './components/my-area/my-list/my-list.component';
 import { SearchComponent } from './components/search/search.component';
-import { UserComponent } from './components/search/user/user.component';
+import { PersonComponent } from './components/search/person/person.component';
+import { NotificationsComponent } from './components/notifications/notifications.component';
+import { NotificationComponent } from './components/notifications/notification/notification.component';
 
 @NgModule({
   declarations: [
@@ -31,7 +34,9 @@ import { UserComponent } from './components/search/user/user.component';
     HeaderComponent,
     MyListComponent,
     SearchComponent,
-    UserComponent,
+    PersonComponent,
+    NotificationsComponent,
+    NotificationComponent,
   ],
   imports: [
     BrowserModule,
@@ -44,6 +49,7 @@ import { UserComponent } from './components/search/user/user.component';
     MatButtonModule,
     MatSlideToggleModule,
     MatExpansionModule,
+    MatDialogModule,
   ],
   providers: [AuthGuardService],
   bootstrap: [AppComponent],

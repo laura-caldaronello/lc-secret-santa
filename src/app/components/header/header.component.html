@@ -27,7 +27,7 @@
     >
   </div>
   <div class="right">
-    <mat-icon>notifications_none</mat-icon>
+    <mat-icon (click)="openNotifications()">notifications_none</mat-icon>
     <mat-form-field *ngIf="wisher" class="field">
       <mat-select
         class="select"

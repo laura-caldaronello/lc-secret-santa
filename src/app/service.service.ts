@@ -3,9 +3,9 @@ import { Injectable } from '@angular/core';
 import { UntypedFormGroup } from '@angular/forms';
 import { environment } from 'src/environments/environment';
 import { AuthResponseData } from './components/auth/auth.component';
-import { Wish, Wisher } from './models/wisher.model';
+import { Person, Wish, Wisher } from './models/wisher.model';
 import { catchError, map, tap } from 'rxjs/operators';
-import { BehaviorSubject, throwError } from 'rxjs';
+import { BehaviorSubject, Observable, throwError } from 'rxjs';
 import { User } from './models/user.model';
 import { ActivatedRoute, Router } from '@angular/router';
 
@@ -133,62 +133,128 @@ export class ServiceService {
     }
   }
 
+  getPeople(wisherUsername: string): Observable<Person[] | null> {
+    return this.http
+      .get<{ [dynamicKey: string]: Wisher } | null>(
+        'https://lc-secret-santa-default-rtdb.europe-west1.firebasedatabase.app/wishers.json'
+      )
+      .pipe(
+        map((res) => {
+          if (!res) {
+            return null;
+          }
+          var resp = Object.entries(<{ [dynamicKey: string]: Wisher }>res);
+          var wishers: Wisher[] | null = null;
+          if (!resp) {
+            wishers = null; //se non esistono wishers, ritorno null
+          } else if (resp && resp.length === 1) {
+            wishers = null; //se esiste un solo wisher o è se stesso e quindi non un amico, oppure è un altro e non va bene, perchè ci deve essere anche sè stesso
+          }
+          //ultimo caso: trasformo da oggetto ad array
+          else if (resp && resp.length > 1) {
+            wishers = resp
+              .map((item) => {
+                return { ...item[1], dbKey: item[0] };
+              })
+              .filter(
+                (wisher) => wisher.username !== wisherUsername //l'ultima possibilità è ci sia effettivamente un array, allora sicuramente qualcosa deve tornare e posso filtrarlo per tutti quelli che non sono il wisher loggato
+              );
+          }
+          if (wishers) {
+            wishers.map((wisher) => {
+              wisher.username, wisher.dbKey;
+            });
+          }
+          return wishers;
+        })
+      );
+  }
+
   getWisherAndFriends(wisherUsername: string) {
     this.http
       .get<{ [dynamicKey: string]: Wisher } | null>(
         'https://lc-secret-santa-default-rtdb.europe-west1.firebasedatabase.app/wishers.json'
       )
       .pipe(
-        map((resp) => {
-          if (!resp) {
+        map((res) => {
+          if (!res) {
             return null;
           }
-          return Object.entries(<{ [dynamicKey: string]: Wisher }>resp);
+          var resp = Object.entries(<{ [dynamicKey: string]: Wisher }>res);
+          var wisher: Wisher | null = null;
+          if (!resp) {
+            wisher = null; //se non esistono wishers, ritorno null
+          } else if (resp && resp.length === 1) {
+            if (resp[0][1].username === wisherUsername) {
+              wisher = resp[0][1];
+              wisher.dbKey = resp[0][0]; //se esiste uno wisher ed è quello giusto, lo ritorno
+            } else {
+              wisher = null; //se esite uno wisher ma non è quello giusto, ritorno null
+            }
+          }
+          //ultimo caso: trasformo da oggetto ad array
+          else if (resp && resp.length > 1) {
+            const rightWisher = resp
+              .map((item) => {
+                return { ...item[1], dbKey: item[0] };
+              })
+              .find((wisher) => wisher.username === wisherUsername);
+            wisher = !!rightWisher ? rightWisher : null; //se esitono più wisher e c'è quello giusto, ritorno quello, altrimenti se ci sono più wisher ma non c'è quello giusto ritorno null
+          }
+          return wisher;
         })
       )
-      .subscribe((resp) => {
-        //con la risposta definisco il wisher...
-        var wisher: Wisher | null = null;
-        if (!resp) {
-          wisher = null; //se non esistono wishers, ritorno null
-        } else if (resp && resp.length === 1) {
-          if (resp[0][1].username === wisherUsername) {
-            wisher = resp[0][1];
-            wisher.dbKey = resp[0][0]; //se esiste uno wisher ed è quello giusto, lo ritorno
-          } else {
-            wisher = null; //se esite uno wisher ma non è quello giusto, ritorno null
-          }
-        }
-        //ultimo caso: trasformo da oggetto ad array
-        else if (resp && resp.length > 1) {
-          const rightWisher = resp
-            .map((item) => {
-              return { ...item[1], dbKey: item[0] };
-            })
-            .find((wisher) => wisher.username === wisherUsername);
-          wisher = !!rightWisher ? rightWisher : null; //se esitono più wisher e c'è quello giusto, ritorno quello, altrimenti se ci sono più wisher ma non c'è quello giusto ritorno null
-        }
+      .subscribe((wisher) => {
         this.wisher.next(wisher);
-
-        //...e i friends
-        var friends: Wisher[] | null = null;
-        if (!resp) {
-          friends = null; //se non esistono wishers, ritorno null
-        } else if (resp && resp.length === 1) {
-          friends = null; //se esiste un solo wisher o è se stesso e quindi non un amico, oppure è un altro e non va bene, perchè ci deve essere anche sè stesso
+        if (wisher && wisher.friends) {
+          this.friends.next(wisher.friends);
         }
-        //ultimo caso: trasformo da oggetto ad array
-        else if (resp && resp.length > 1) {
-          friends = resp
-            .map((item) => {
-              return { ...item[1], dbKey: item[0] };
-            })
-            .filter(
-              (wisher) => wisher.username !== wisherUsername //l'ultima possibilità è ci sia effettivamente un array, allora sicuramente qualcosa deve tornare e posso filtrarlo per tutti quelli che non sono il wisher loggato
-            );
-        }
-        this.friends.next(friends);
       });
+  }
+
+  sendRequest(to: Wisher) {
+    var from = this.wisher.value;
+    const fromDbKey = from ? from.dbKey : null;
+    const toDbKey = to.dbKey ? to.dbKey : null;
+    if (from && fromDbKey && toDbKey) {
+      if (from.friends) {
+        from.friends.push({
+          dbKey: toDbKey,
+          username: to.username,
+          pending: true,
+        });
+      } else {
+        from.friends = [
+          { dbKey: toDbKey, username: to.username, pending: true },
+        ];
+      }
+
+      if (to.requests) {
+        to.requests.push({ dbKey: fromDbKey, username: from.username });
+      } else {
+        to.requests = [{ dbKey: fromDbKey, username: from.username }];
+      }
+
+      const fromBody = { [<string>fromDbKey]: from };
+      const toBody = { [<string>toDbKey]: to };
+
+      this.http
+        .patch<{ [dynamicKey: string]: Wisher }>(
+          'https://lc-secret-santa-default-rtdb.europe-west1.firebasedatabase.app/wishers.json',
+          toBody
+        )
+        .subscribe((respTo) => {
+          console.log('respTo', respTo);
+          this.http
+            .patch<{ [dynamicKey: string]: Wisher }>(
+              'https://lc-secret-santa-default-rtdb.europe-west1.firebasedatabase.app/wishers.json',
+              fromBody
+            )
+            .subscribe((respFrom) => {
+              console.log('respFrom', respFrom);
+            });
+        });
+    }
   }
 
   handleAuth(resData: AuthResponseData) {
