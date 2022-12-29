@@ -1,11 +1,12 @@
 <header class="flex">
   <div class="left">
-    <p class="logo">{{ title | uppercase }}</p>
+    <mat-icon>card_giftcard</mat-icon>
     <a
       mat-button
       *ngIf="wisher"
       class="btn btn-primary"
       [routerLink]="['my-list']"
+      routerLinkActive="active"
       >la mia lista</a
     >
     <a
@@ -13,7 +14,16 @@
       *ngIf="wisher"
       class="btn btn-primary"
       [routerLink]="['friends']"
+      routerLinkActive="active"
       >i miei amici</a
+    >
+    <a
+      mat-button
+      *ngIf="wisher"
+      class="btn btn-primary"
+      [routerLink]="['search']"
+      routerLinkActive="active"
+      >cerca amici</a
     >
   </div>
   <div class="right">
@@ -32,6 +42,7 @@
       class="btn btn-primary"
       [routerLink]="['auth']"
       [queryParams]="{ type: 'signup' }"
+      routerLinkActive="active"
       >iscriviti</a
     >
     <a
@@ -40,6 +51,7 @@
       class="btn btn-primary"
       [routerLink]="['auth']"
       [queryParams]="{ type: 'login' }"
+      routerLinkActive="active"
       >entra</a
     >
   </div>

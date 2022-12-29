@@ -9,7 +9,6 @@ import { ServiceService } from 'src/app/service.service';
   styleUrls: ['./header.component.scss'],
 })
 export class HeaderComponent implements OnInit {
-  title = 'secret santa';
   wisher!: Wisher | null;
 
   constructor(private service: ServiceService, private router: Router) {}

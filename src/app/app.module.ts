@@ -18,6 +18,8 @@ import { HeaderComponent } from './components/header/header.component';
 import { WishesComponent } from './components/wishes/wishes.component';
 import { NewWishComponent } from './components/my-area/new-wish/new-wish.component';
 import { MyListComponent } from './components/my-area/my-list/my-list.component';
+import { SearchComponent } from './components/search/search.component';
+import { UserComponent } from './components/search/user/user.component';
 
 @NgModule({
   declarations: [
@@ -28,6 +30,8 @@ import { MyListComponent } from './components/my-area/my-list/my-list.component'
     NewWishComponent,
     HeaderComponent,
     MyListComponent,
+    SearchComponent,
+    UserComponent,
   ],
   imports: [
     BrowserModule,
