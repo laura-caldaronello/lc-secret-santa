@@ -1,4 +1,4 @@
-@import "../../../variables.scss";
+@import "../../../style/variables.scss";
 
 .wish {
   display: flex;
@@ -23,7 +23,9 @@ mat-expansion-panel {
     padding: 0 15px;
   }
   .mat-expansion-panel-header.cdk-focused,
-  .mat-expansion-panel-header:hover {
+  .mat-expansion-panel-header:hover,
+  &.mat-expansion-panel:not(.mat-expanded):not([aria-disabled="true"])
+    .mat-expansion-panel-header:hover {
     background-color: transparent;
   }
 }
