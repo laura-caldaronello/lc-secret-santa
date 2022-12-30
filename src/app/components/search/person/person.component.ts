@@ -15,4 +15,23 @@ export class PersonComponent {
   sendRequest(person: Person) {
     this.service.sendRequest(person);
   }
+
+  isFriend(person: Person) {
+    let wisher = this.service.wisher.value;
+    if (wisher && wisher.friends) {
+      let found = wisher.friends.find(
+        (friend) => friend.username === person.username
+      );
+      if (found) {
+        if (found.pending) {
+          return 'pending';
+        } else {
+          return 'yes';
+        }
+      } else {
+        return 'no';
+      }
+    }
+    return 'no';
+  }
 }

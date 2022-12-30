@@ -1,4 +1,12 @@
 <p>
   <span>{{ person.username }}</span>
-  <button mat-button (click)="sendRequest(person)">aggiungi</button>
+  <button
+    mat-button
+    *ngIf="isFriend(person) === 'no'"
+    (click)="sendRequest(person)"
+  >
+    aggiungi
+  </button>
+  <span *ngIf="isFriend(person) === 'yes'">amico</span>
+  <span *ngIf="isFriend(person) === 'pending'">richiesta inviata</span>
 </p>

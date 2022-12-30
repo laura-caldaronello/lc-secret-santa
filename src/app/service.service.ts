@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { UntypedFormGroup } from '@angular/forms';
 import { environment } from 'src/environments/environment';
 import { AuthResponseData } from './components/auth/auth.component';
-import { Person, Wish, Wisher } from './models/wisher.model';
+import { Friend, Person, Wish, Wisher } from './models/wisher.model';
 import { catchError, map, tap } from 'rxjs/operators';
 import { BehaviorSubject, Observable, throwError } from 'rxjs';
 import { User } from './models/user.model';
@@ -47,7 +47,16 @@ export class ServiceService {
           if (signup) {
             this.postWisher(resp);
           } else {
-            this.getWisherAndFriends(resp.email.replace('@email.com', '')); //che sarebbe comunque fatto in postwisher
+            this.getWisher(resp.email.replace('@email.com', '')).subscribe(
+              (wisher) => {
+                this.wisher.next(wisher);
+                var friends: Friend[] | null = null;
+                if (wisher && wisher.friends) {
+                  friends = wisher.friends.filter((friend) => !friend.pending);
+                  this.friends.next(friends);
+                }
+              }
+            ); //che sarebbe comunque fatto in postwisher
           }
         })
       )
@@ -72,7 +81,16 @@ export class ServiceService {
       const expirationDuration =
         user.tokenExpirationDate.getTime() - new Date().getTime();
       this.autoLogout(expirationDuration);
-      this.getWisherAndFriends(user.email.replace('@email.com', ''));
+      this.getWisher(user.email.replace('@email.com', '')).subscribe(
+        (wisher) => {
+          this.wisher.next(wisher);
+          var friends: Friend[] | null = null;
+          if (wisher && wisher.friends) {
+            friends = wisher.friends.filter((friend) => !friend.pending);
+            this.friends.next(friends);
+          }
+        }
+      );
     }
   }
 
@@ -86,7 +104,16 @@ export class ServiceService {
       )
       .pipe(
         tap((resp) => {
-          this.getWisherAndFriends(data.email.replace('@email.com', ''));
+          this.getWisher(data.email.replace('@email.com', '')).subscribe(
+            (wisher) => {
+              this.wisher.next(wisher);
+              var friends: Friend[] | null = null;
+              if (wisher && wisher.friends) {
+                friends = wisher.friends.filter((friend) => !friend.pending);
+                this.friends.next(friends);
+              }
+            }
+          );
         })
       )
       .subscribe(); //giusto fare qui la subscribe? o va fatta quando si istanzia un certo componente?
@@ -170,8 +197,8 @@ export class ServiceService {
       );
   }
 
-  getWisherAndFriends(wisherUsername: string) {
-    this.http
+  getWisher(wisherUsername: string): Observable<Wisher | null> {
+    return this.http
       .get<{ [dynamicKey: string]: Wisher } | null>(
         'https://lc-secret-santa-default-rtdb.europe-west1.firebasedatabase.app/wishers.json'
       )
@@ -203,13 +230,7 @@ export class ServiceService {
           }
           return wisher;
         })
-      )
-      .subscribe((wisher) => {
-        this.wisher.next(wisher);
-        if (wisher && wisher.friends) {
-          this.friends.next(wisher.friends);
-        }
-      });
+      );
   }
 
   sendRequest(to: Wisher) {
@@ -255,6 +276,82 @@ export class ServiceService {
             });
         });
     }
+  }
+
+  acceptRequest(fromPerson: Person) {
+    this.getWisher(fromPerson.username).subscribe((resp) => {
+      if (resp) {
+        let to = this.wisher.value;
+        let from = { ...resp };
+        const toDbKey = to ? to.dbKey : null;
+        const fromDbKey = from.dbKey ? from.dbKey : null;
+        if (to && to.username && toDbKey && fromDbKey) {
+          if (to.requests) {
+            let requestIndex = to.requests.indexOf({
+              dbKey: toDbKey,
+              username: to.username,
+            });
+            to.requests.splice(requestIndex, 1);
+            if (to.friends) {
+              to.friends.push({
+                dbKey: toDbKey,
+                username: from.username,
+                pending: false,
+              });
+            } else {
+              to.friends = [
+                { dbKey: toDbKey, username: from.username, pending: false },
+              ];
+            }
+          }
+
+          if (from.friends) {
+            let newFriend = from.friends.find(
+              (friend) => friend.dbKey === toDbKey
+            );
+            if (newFriend) {
+              let friendIndex = from.friends.indexOf(newFriend);
+              from.friends[friendIndex].pending = false;
+            }
+          }
+
+          const toBody = { [<string>toDbKey]: to };
+          const fromBody = { [<string>fromDbKey]: from };
+
+          this.http
+            .patch<{ [dynamicKey: string]: Wisher }>(
+              'https://lc-secret-santa-default-rtdb.europe-west1.firebasedatabase.app/wishers.json',
+              toBody
+            )
+            .subscribe((respTo) => {
+              this.http
+                .patch<{ [dynamicKey: string]: Wisher }>(
+                  'https://lc-secret-santa-default-rtdb.europe-west1.firebasedatabase.app/wishers.json',
+                  fromBody
+                )
+                .pipe(
+                  tap((resp) => {
+                    if (this.wisher.value) {
+                      this.getWisher(this.wisher.value.username).subscribe(
+                        (wisher) => {
+                          this.wisher.next(wisher);
+                          var friends: Friend[] | null = null;
+                          if (wisher && wisher.friends) {
+                            friends = wisher.friends.filter(
+                              (friend) => !friend.pending
+                            );
+                            this.friends.next(friends);
+                          }
+                        }
+                      );
+                    }
+                  })
+                )
+                .subscribe();
+            });
+        }
+      }
+    });
   }
 
   handleAuth(resData: AuthResponseData) {
