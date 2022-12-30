@@ -4,6 +4,7 @@ export interface Person {
 }
 export interface Friend extends Person {
   pending: boolean;
+  wishes?: Wish[];
 }
 export interface Wisher extends Person {
   wishes?: Wish[];

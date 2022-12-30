@@ -265,15 +265,12 @@ export class ServiceService {
           toBody
         )
         .subscribe((respTo) => {
-          console.log('respTo', respTo);
           this.http
             .patch<{ [dynamicKey: string]: Wisher }>(
               'https://lc-secret-santa-default-rtdb.europe-west1.firebasedatabase.app/wishers.json',
               fromBody
             )
-            .subscribe((respFrom) => {
-              console.log('respFrom', respFrom);
-            });
+            .subscribe();
         });
     }
   }
@@ -294,13 +291,13 @@ export class ServiceService {
             to.requests.splice(requestIndex, 1);
             if (to.friends) {
               to.friends.push({
-                dbKey: toDbKey,
+                dbKey: fromDbKey,
                 username: from.username,
                 pending: false,
               });
             } else {
               to.friends = [
-                { dbKey: toDbKey, username: from.username, pending: false },
+                { dbKey: fromDbKey, username: from.username, pending: false },
               ];
             }
           }

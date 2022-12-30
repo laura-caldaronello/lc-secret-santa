@@ -13,6 +13,8 @@ export class FriendsComponent implements OnInit {
   constructor(private service: ServiceService) {}
 
   ngOnInit(): void {
-    this.service.friends.subscribe((resp) => (this.friends = resp));
+    this.service.friends.subscribe((resp) => {
+      this.friends = resp;
+    });
   }
 }
