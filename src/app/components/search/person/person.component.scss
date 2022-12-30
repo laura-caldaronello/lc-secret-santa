@@ -1,7 +1,14 @@
+@import "../../../../style/variables.scss";
+
 p {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+  padding: 0 15px;
+  margin-bottom: 5px;
+  border-radius: 15px;
+  border: 2px solid $color-1;
+  height: 50px;
 }
 
 .button-like {

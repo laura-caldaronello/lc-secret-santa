@@ -7,7 +7,7 @@
       class="btn btn-primary"
       [routerLink]="['my-list']"
       routerLinkActive="active"
-      >la mia lista</a
+      >wishlist</a
     >
     <a
       mat-button
@@ -15,7 +15,7 @@
       class="btn btn-primary"
       [routerLink]="['friends']"
       routerLinkActive="active"
-      >i miei amici</a
+      >amici</a
     >
     <a
       mat-button
@@ -23,7 +23,7 @@
       class="btn btn-primary"
       [routerLink]="['search']"
       routerLinkActive="active"
-      >cerca amici</a
+      >cerca</a
     >
   </div>
   <div class="right">
@@ -37,6 +37,7 @@
       <mat-select
         class="select"
         [placeholder]="'Ciao ' + wisher.username + '!'"
+        panelClass="darkBg"
       >
         <mat-option (click)="logout()">logout</mat-option>
       </mat-select>

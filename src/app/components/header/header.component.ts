@@ -30,6 +30,6 @@ export class HeaderComponent implements OnInit {
   }
 
   openNotifications() {
-    this.dialog.open(NotificationsComponent);
+    this.dialog.open(NotificationsComponent, { panelClass: 'roundedModal' });
   }
 }

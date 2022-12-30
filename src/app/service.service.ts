@@ -119,10 +119,16 @@ export class ServiceService {
       .subscribe(); //giusto fare qui la subscribe? o va fatta quando si istanzia un certo componente?
   }
 
-  updateWisher(wish: Wish) {
+  addWish(wish: Wish) {
     var wisher = this.wisher.value;
     const dbKey = wisher ? wisher.dbKey : null;
-    if (wisher && dbKey) {
+    if (
+      wisher &&
+      dbKey &&
+      ((wisher.wishes &&
+        !wisher.wishes.find((item) => item.title === wish.title)) ||
+        !wisher.wishes)
+    ) {
       if (wisher.wishes) {
         wisher.wishes.push(wish);
       } else {
@@ -141,8 +147,34 @@ export class ServiceService {
     }
   }
 
+  deleteWish(wish: Wish) {
+    var wisher = this.wisher.value;
+    const dbKey = wisher ? wisher.dbKey : null;
+    if (
+      wisher &&
+      dbKey &&
+      wisher.wishes &&
+      wisher.wishes.find((item) => item.title === wish.title)
+    ) {
+      let index = wisher.wishes.indexOf(
+        wisher.wishes.find((item) => item.title === wish.title)!
+      );
+      wisher.wishes.splice(index, 1);
+      const body = { [<string>dbKey]: wisher };
+      this.http
+        .patch<{ [dynamicKey: string]: Wisher }>(
+          'https://lc-secret-santa-default-rtdb.europe-west1.firebasedatabase.app/wishers.json',
+          body
+        )
+        .subscribe((resp) => {
+          const wisher = resp[dbKey];
+          this.wisher.next(wisher);
+        });
+    }
+  }
+
   takeUntakeWish(take: boolean, wishIndex: number, friend: Wisher) {
-    if (friend.wishes && this.wisher.value) {
+    if (friend.wishes && this.wisher.value && friend.dbKey) {
       if (take) {
         friend.wishes[wishIndex].taken = true;
         friend.wishes[wishIndex].taker = this.wisher.value.username;

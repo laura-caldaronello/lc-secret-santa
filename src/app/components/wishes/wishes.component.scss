@@ -8,21 +8,34 @@
   margin-bottom: 5px;
   &.my-wish {
     border-radius: 15px;
-    border: 3px solid $color-2-05;
+    border: 2px solid $color-1;
+    height: 50px;
   }
 }
 
 mat-expansion-panel {
   margin-bottom: 10px;
-  border: 3px solid $color-3-05;
+  border: 2px solid $color-1;
   border-radius: 15px;
+  min-height: 50px;
+  background-color: unset;
   &.mat-expansion-panel:not([class*="mat-elevation-z"]) {
     box-shadow: none;
   }
+  .mat-expansion-panel-header.cdk-focused,
+  .mat-expansion-panel-header:hover,
+  &.mat-expansion-panel:not(.mat-expanded):not([aria-disabled="true"])
+    .mat-expansion-panel-header:hover {
+    background-color: unset;
+  }
   p {
+    color: white;
     font-size: 16px;
   }
   .mat-expansion-panel-header {
     padding: 0 15px;
+  }
+  ::ng-deep .mat-expansion-indicator::after {
+    color: white;
   }
 }

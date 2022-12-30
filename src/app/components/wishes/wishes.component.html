@@ -37,6 +37,9 @@
       </div>
       <div>
         <p *ngIf="wish.taken" class="bold">preso</p>
+        <mat-icon *ngIf="!wish.taken" (click)="deleteWish(wish)"
+          >delete_outline</mat-icon
+        >
       </div>
     </div>
   </div>
