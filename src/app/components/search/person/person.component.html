@@ -7,6 +7,8 @@
   >
     aggiungi
   </button>
-  <span *ngIf="isFriend(person) === 'yes'">amico</span>
-  <span *ngIf="isFriend(person) === 'pending'">richiesta inviata</span>
+  <span *ngIf="isFriend(person) === 'yes'" class="button-like">amico</span>
+  <span *ngIf="isFriend(person) === 'pending'" class="button-like"
+    >richiesta inviata</span
+  >
 </p>

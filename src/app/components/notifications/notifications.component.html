@@ -1,5 +1,8 @@
-<p>notifications works!</p>
-<app-notification
-  *ngFor="let person of people"
-  [person]="person"
-></app-notification>
+<div class="container">
+  <p class="bold">notifiche</p>
+  <app-notification
+    *ngFor="let person of people"
+    [person]="person"
+  ></app-notification>
+  <p *ngIf="!people">non ci sono notifiche</p>
+</div>

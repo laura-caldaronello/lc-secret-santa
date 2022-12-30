@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
-import { Wisher } from 'src/app/models/wisher.model';
+import { Person, Wisher } from 'src/app/models/wisher.model';
 import { ServiceService } from 'src/app/service.service';
 import { NotificationsComponent } from '../notifications/notifications.component';
 
@@ -12,12 +12,16 @@ import { NotificationsComponent } from '../notifications/notifications.component
 })
 export class HeaderComponent implements OnInit {
   wisher!: Wisher | null;
+  notifications!: Person[] | null;
 
   constructor(private service: ServiceService, private dialog: MatDialog) {}
 
   ngOnInit(): void {
     this.service.wisher.subscribe((resp) => {
       this.wisher = resp;
+      if (resp && resp.requests) {
+        this.notifications = resp.requests;
+      }
     });
   }
 

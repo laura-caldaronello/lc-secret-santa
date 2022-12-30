@@ -32,8 +32,23 @@
   .right {
     display: flex;
     align-items: center;
-    mat-icon {
+    .notifications {
       margin-right: 10px;
+      position: relative;
+      .circle {
+        background-color: $color-1;
+        color: white;
+        font-size: 8px;
+        height: 12px;
+        width: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        position: absolute;
+        top: 0;
+        right: 0;
+      }
     }
     .field {
       ::ng-deep .mat-mdc-select-placeholder {
