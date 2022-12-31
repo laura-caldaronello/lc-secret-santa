@@ -7,7 +7,9 @@ import { Friend, Person, Wish, Wisher } from './models/wisher.model';
 import { catchError, map, tap } from 'rxjs/operators';
 import { BehaviorSubject, Observable, throwError } from 'rxjs';
 import { User } from './models/user.model';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
+import { AlertComponent } from './components/alert/alert.component';
+import { MatDialog } from '@angular/material/dialog';
 
 @Injectable({
   providedIn: 'root',
@@ -21,7 +23,7 @@ export class ServiceService {
   constructor(
     private http: HttpClient,
     private router: Router,
-    private route: ActivatedRoute
+    private dialog: MatDialog
   ) {}
 
   signupOrLogin(form: UntypedFormGroup, signup: boolean) {
@@ -484,7 +486,10 @@ export class ServiceService {
   }
 
   handleError(error: HttpErrorResponse) {
-    alert(error.error.error.message);
+    this.dialog.open(AlertComponent, {
+      panelClass: 'roundedModal',
+      data: error.error.error.message,
+    });
     return throwError(error);
   }
 }

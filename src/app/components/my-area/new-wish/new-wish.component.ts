@@ -5,8 +5,10 @@ import {
   FormGroup,
   Validators,
 } from '@angular/forms';
+import { MatDialog } from '@angular/material/dialog';
 import { Wish } from 'src/app/models/wisher.model';
 import { ServiceService } from 'src/app/service.service';
+import { AlertComponent } from '../../alert/alert.component';
 
 @Component({
   selector: 'app-new-wish',
@@ -16,7 +18,11 @@ import { ServiceService } from 'src/app/service.service';
 export class NewWishComponent implements OnInit {
   wishForm: FormGroup;
 
-  constructor(private fb: FormBuilder, private service: ServiceService) {
+  constructor(
+    private fb: FormBuilder,
+    private service: ServiceService,
+    private dialog: MatDialog
+  ) {
     this.wishForm = this.fb.group({
       name: new FormControl('', Validators.required),
       link: new FormControl(''),
@@ -31,7 +37,10 @@ export class NewWishComponent implements OnInit {
       const body = new Wish(value.name, false, null, value.link);
       this.service.addWish(body);
     } else {
-      alert('error');
+      this.dialog.open(AlertComponent, {
+        panelClass: 'roundedModal',
+        data: 'form invalid',
+      });
     }
   }
 }

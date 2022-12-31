@@ -23,6 +23,7 @@ import { SearchComponent } from './components/search/search.component';
 import { PersonComponent } from './components/search/person/person.component';
 import { NotificationsComponent } from './components/notifications/notifications.component';
 import { NotificationComponent } from './components/notifications/notification/notification.component';
+import { AlertComponent } from './components/alert/alert.component';
 
 @NgModule({
   declarations: [
@@ -37,6 +38,7 @@ import { NotificationComponent } from './components/notifications/notification/n
     PersonComponent,
     NotificationsComponent,
     NotificationComponent,
+    AlertComponent,
   ],
   imports: [
     BrowserModule,
