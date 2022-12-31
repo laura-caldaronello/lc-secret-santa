@@ -31,6 +31,8 @@ export class HeaderComponent implements OnInit {
   }
 
   openNotifications() {
-    this.dialog.open(NotificationsComponent, { panelClass: 'roundedModal' });
+    if (this.service.user.value) {
+      this.dialog.open(NotificationsComponent, { panelClass: 'roundedModal' });
+    }
   }
 }

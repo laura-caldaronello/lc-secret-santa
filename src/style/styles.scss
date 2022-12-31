@@ -10,12 +10,12 @@ body {
   box-sizing: border-box;
   margin: 0;
   padding: 20px;
-  background-color: rgb(39, 50, 56);
+  background-color: $color-2;
   color: white;
 }
 
 .darkBg {
-  background-color: rgb(39, 50, 56) !important;
+  background-color: $color-2 !important;
   .mdc-list-item__primary-text {
     color: white !important;
     font-size: 12px !important;
@@ -29,4 +29,10 @@ body {
 
 .mdc-button__label {
   color: white;
+}
+
+.custom-input {
+  border-radius: 5px;
+  border: none;
+  padding: 5px 10px;
 }

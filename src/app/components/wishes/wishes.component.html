@@ -13,7 +13,6 @@
       <div>
         <mat-slide-toggle
           class="example-margin"
-          color="primary"
           [checked]="wish.taken && iCanTake(i)"
           [disabled]="wish.taken && !iCanTake(i)"
           (change)="wish.taken ? untakeWish(i, wisher) : takeWish(i, wisher)"

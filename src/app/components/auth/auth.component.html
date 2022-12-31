@@ -2,12 +2,14 @@
   <form [formGroup]="authForm" (ngSubmit)="onSubmit(authForm)">
     <input
       matInput
+      class="custom-input"
       type="text"
       formControlName="username"
       placeholder="username"
     />
     <input
       matInput
+      class="custom-input"
       type="password"
       formControlName="password"
       placeholder="password"
