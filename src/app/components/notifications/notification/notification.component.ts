@@ -15,4 +15,8 @@ export class NotificationComponent {
   acceptRequest(from: Person) {
     this.service.acceptRequest(from);
   }
+
+  refuseRequest(from: Person) {
+    this.service.refuseRequest(from);
+  }
 }

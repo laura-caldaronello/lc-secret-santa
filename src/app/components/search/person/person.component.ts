@@ -29,7 +29,16 @@ export class PersonComponent {
           return 'yes';
         }
       } else {
-        return 'no';
+        let found = wisher.requests
+          ? wisher.requests.find(
+              (friend) => friend.username === person.username
+            )
+          : false;
+        if (found) {
+          return 'request';
+        } else {
+          return 'no';
+        }
       }
     }
     return 'no';

@@ -383,6 +383,71 @@ export class ServiceService {
     });
   }
 
+  refuseRequest(fromPerson: Person) {
+    this.getWisher(fromPerson.username).subscribe((resp) => {
+      if (resp) {
+        let to = this.wisher.value;
+        let from = { ...resp };
+        const toDbKey = to ? to.dbKey : null;
+        const fromDbKey = from.dbKey ? from.dbKey : null;
+        if (to && to.username && toDbKey && fromDbKey) {
+          if (to.requests) {
+            let requestIndex = to.requests.indexOf({
+              dbKey: toDbKey,
+              username: to.username,
+            });
+            to.requests.splice(requestIndex, 1);
+          }
+
+          if (from.friends) {
+            let newFriend = from.friends.find(
+              (friend) => friend.dbKey === toDbKey
+            );
+            if (newFriend) {
+              let friendIndex = from.friends.indexOf(newFriend);
+              from.friends.splice(friendIndex, 1);
+            }
+          }
+
+          const toBody = { [<string>toDbKey]: to };
+          const fromBody = { [<string>fromDbKey]: from };
+
+          this.http
+            .patch<{ [dynamicKey: string]: Wisher }>(
+              'https://lc-secret-santa-default-rtdb.europe-west1.firebasedatabase.app/wishers.json',
+              toBody
+            )
+            .subscribe((respTo) => {
+              this.http
+                .patch<{ [dynamicKey: string]: Wisher }>(
+                  'https://lc-secret-santa-default-rtdb.europe-west1.firebasedatabase.app/wishers.json',
+                  fromBody
+                )
+                .pipe(
+                  tap((resp) => {
+                    if (this.wisher.value) {
+                      this.getWisher(this.wisher.value.username).subscribe(
+                        (wisher) => {
+                          this.wisher.next(wisher);
+                          var friends: Friend[] | null = null;
+                          if (wisher && wisher.friends) {
+                            friends = wisher.friends.filter(
+                              (friend) => !friend.pending
+                            );
+                            this.friends.next(friends);
+                          }
+                        }
+                      );
+                    }
+                  })
+                )
+                .subscribe();
+            });
+        }
+      }
+    });
+  }
+
   handleAuth(resData: AuthResponseData) {
     const expirationDate = new Date(
       new Date().getTime() + +resData.expiresIn * 1000

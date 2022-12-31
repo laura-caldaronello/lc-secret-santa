@@ -27,6 +27,7 @@ export class HeaderComponent implements OnInit {
 
   logout() {
     this.service.logout();
+    this.notifications = null;
   }
 
   openNotifications() {
