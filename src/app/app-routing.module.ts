@@ -4,6 +4,7 @@ import { AuthGuardService } from './auth-guard.service';
 import { AuthComponent } from './components/auth/auth.component';
 import { FriendsComponent } from './components/friends/friends.component';
 import { MyListComponent } from './components/my-area/my-list/my-list.component';
+import { SearchComponent } from './components/search/search.component';
 
 const routes: Routes = [
   {
@@ -19,6 +20,11 @@ const routes: Routes = [
   {
     path: 'friends',
     component: FriendsComponent,
+    canActivate: [AuthGuardService],
+  },
+  {
+    path: 'search',
+    component: SearchComponent,
     canActivate: [AuthGuardService],
   },
   { path: 'auth', component: AuthComponent },

@@ -1,7 +1,15 @@
-export interface Wisher {
+export interface Person {
   username: string;
-  wishes?: Wish[];
   dbKey?: string;
+}
+export interface Friend extends Person {
+  pending: boolean;
+  wishes?: Wish[];
+}
+export interface Wisher extends Person {
+  wishes?: Wish[];
+  friends?: Friend[];
+  requests?: Person[];
 }
 export class Wish {
   constructor(

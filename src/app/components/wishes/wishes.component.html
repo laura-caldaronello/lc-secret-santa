@@ -13,7 +13,6 @@
       <div>
         <mat-slide-toggle
           class="example-margin"
-          color="primary"
           [checked]="wish.taken && iCanTake(i)"
           [disabled]="wish.taken && !iCanTake(i)"
           (change)="wish.taken ? untakeWish(i, wisher) : takeWish(i, wisher)"
@@ -37,6 +36,9 @@
       </div>
       <div>
         <p *ngIf="wish.taken" class="bold">preso</p>
+        <mat-icon *ngIf="!wish.taken" (click)="deleteWish(wish)"
+          >delete_outline</mat-icon
+        >
       </div>
     </div>
   </div>

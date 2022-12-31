@@ -5,9 +5,11 @@ import {
   UntypedFormGroup,
   Validators,
 } from '@angular/forms';
+import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ServiceService } from '../../service.service';
+import { AlertComponent } from '../alert/alert.component';
 
 export interface AuthResponseData {
   kind: string;
@@ -32,7 +34,8 @@ export class AuthComponent implements OnInit, OnDestroy {
   constructor(
     private fb: UntypedFormBuilder,
     private service: ServiceService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private dialog: MatDialog
   ) {
     this.authForm = this.fb.group({
       username: new UntypedFormControl('', Validators.required),
@@ -58,7 +61,10 @@ export class AuthComponent implements OnInit, OnDestroy {
     if (form.valid) {
       this.service.signupOrLogin(this.authForm, this.signup);
     } else {
-      alert('error');
+      this.dialog.open(AlertComponent, {
+        panelClass: 'roundedModal',
+        data: 'form invalid',
+      });
     }
   }
 

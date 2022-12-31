@@ -1,0 +1,21 @@
+@import "../../../../style/variables.scss";
+
+p {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 15px;
+  margin-bottom: 5px;
+  border-radius: 15px;
+  border: 2px solid $color-1;
+  height: 50px;
+}
+
+.button-like {
+  height: 36px;
+  line-height: 36px;
+  padding: 0 8px 0 8px;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.0892857143em;
+}

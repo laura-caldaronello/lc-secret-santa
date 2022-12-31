@@ -1,15 +1,19 @@
-<form [formGroup]="authForm" (ngSubmit)="onSubmit(authForm)">
-  <input
-    matInput
-    type="text"
-    formControlName="username"
-    placeholder="username"
-  />
-  <input
-    matInput
-    type="password"
-    formControlName="password"
-    placeholder="password"
-  />
-  <button mat-button>{{ signup ? "Sign up" : "Login" }}</button>
-</form>
+<div class="container">
+  <form [formGroup]="authForm" (ngSubmit)="onSubmit(authForm)">
+    <input
+      matInput
+      class="custom-input"
+      type="text"
+      formControlName="username"
+      placeholder="username"
+    />
+    <input
+      matInput
+      class="custom-input"
+      type="password"
+      formControlName="password"
+      placeholder="password"
+    />
+    <button mat-button>{{ signup ? "iscriviti" : "entra" }}</button>
+  </form>
+</div>

@@ -1,6 +1,18 @@
 <p class="bold">inserisci un elemento</p>
 <form [formGroup]="wishForm" (ngSubmit)="onSubmit(wishForm)">
-  <input matInput type="text" formControlName="name" placeholder="nome" />
-  <input matInput type="text" formControlName="link" placeholder="link" />
+  <input
+    matInput
+    class="custom-input"
+    type="text"
+    formControlName="name"
+    placeholder="nome"
+  />
+  <input
+    matInput
+    class="custom-input"
+    type="text"
+    formControlName="link"
+    placeholder="link"
+  />
   <button mat-button>aggiungi</button>
 </form>

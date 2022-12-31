@@ -1,0 +1,9 @@
+<div class="container">
+  <span>{{
+    person.username + " ti ha inviato una richiesta di amicizia"
+  }}</span>
+  <div class="button-container">
+    <button mat-button (click)="acceptRequest(person)">accetta</button>
+    <button mat-button (click)="refuseRequest(person)">rifiuta</button>
+  </div>
+</div>

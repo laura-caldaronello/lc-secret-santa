@@ -1,27 +1,43 @@
 <header class="flex">
   <div class="left">
-    <p class="logo">{{ title | uppercase }}</p>
+    <mat-icon>card_giftcard</mat-icon>
     <a
       mat-button
       *ngIf="wisher"
       class="btn btn-primary"
       [routerLink]="['my-list']"
-      >la mia lista</a
+      routerLinkActive="active"
+      >wishlist</a
     >
     <a
       mat-button
       *ngIf="wisher"
       class="btn btn-primary"
       [routerLink]="['friends']"
-      >i miei amici</a
+      routerLinkActive="active"
+      >amici</a
+    >
+    <a
+      mat-button
+      *ngIf="wisher"
+      class="btn btn-primary"
+      [routerLink]="['search']"
+      routerLinkActive="active"
+      >cerca</a
     >
   </div>
   <div class="right">
-    <mat-icon>notifications_none</mat-icon>
+    <div class="notifications" (click)="openNotifications()">
+      <mat-icon>notifications_none</mat-icon>
+      <div *ngIf="notifications && notifications.length" class="circle">
+        <span class="number">{{ notifications.length }}</span>
+      </div>
+    </div>
     <mat-form-field *ngIf="wisher" class="field">
       <mat-select
         class="select"
         [placeholder]="'Ciao ' + wisher.username + '!'"
+        panelClass="darkBg"
       >
         <mat-option (click)="logout()">logout</mat-option>
       </mat-select>
@@ -32,6 +48,7 @@
       class="btn btn-primary"
       [routerLink]="['auth']"
       [queryParams]="{ type: 'signup' }"
+      routerLinkActive="active"
       >iscriviti</a
     >
     <a
@@ -40,6 +57,7 @@
       class="btn btn-primary"
       [routerLink]="['auth']"
       [queryParams]="{ type: 'login' }"
+      routerLinkActive="active"
       >entra</a
     >
   </div>

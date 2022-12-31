@@ -3,11 +3,13 @@ import { Injectable } from '@angular/core';
 import { UntypedFormGroup } from '@angular/forms';
 import { environment } from 'src/environments/environment';
 import { AuthResponseData } from './components/auth/auth.component';
-import { Wish, Wisher } from './models/wisher.model';
+import { Friend, Person, Wish, Wisher } from './models/wisher.model';
 import { catchError, map, tap } from 'rxjs/operators';
-import { BehaviorSubject, throwError } from 'rxjs';
+import { BehaviorSubject, Observable, throwError } from 'rxjs';
 import { User } from './models/user.model';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
+import { AlertComponent } from './components/alert/alert.component';
+import { MatDialog } from '@angular/material/dialog';
 
 @Injectable({
   providedIn: 'root',
@@ -21,7 +23,7 @@ export class ServiceService {
   constructor(
     private http: HttpClient,
     private router: Router,
-    private route: ActivatedRoute
+    private dialog: MatDialog
   ) {}
 
   signupOrLogin(form: UntypedFormGroup, signup: boolean) {
@@ -47,7 +49,16 @@ export class ServiceService {
           if (signup) {
             this.postWisher(resp);
           } else {
-            this.getWisherAndFriends(resp.email.replace('@email.com', '')); //che sarebbe comunque fatto in postwisher
+            this.getWisher(resp.email.replace('@email.com', '')).subscribe(
+              (wisher) => {
+                this.wisher.next(wisher);
+                var friends: Friend[] | null = null;
+                if (wisher && wisher.friends) {
+                  friends = wisher.friends.filter((friend) => !friend.pending);
+                  this.friends.next(friends);
+                }
+              }
+            ); //che sarebbe comunque fatto in postwisher
           }
         })
       )
@@ -72,7 +83,16 @@ export class ServiceService {
       const expirationDuration =
         user.tokenExpirationDate.getTime() - new Date().getTime();
       this.autoLogout(expirationDuration);
-      this.getWisherAndFriends(user.email.replace('@email.com', ''));
+      this.getWisher(user.email.replace('@email.com', '')).subscribe(
+        (wisher) => {
+          this.wisher.next(wisher);
+          var friends: Friend[] | null = null;
+          if (wisher && wisher.friends) {
+            friends = wisher.friends.filter((friend) => !friend.pending);
+            this.friends.next(friends);
+          }
+        }
+      );
     }
   }
 
@@ -86,16 +106,31 @@ export class ServiceService {
       )
       .pipe(
         tap((resp) => {
-          this.getWisherAndFriends(data.email.replace('@email.com', ''));
+          this.getWisher(data.email.replace('@email.com', '')).subscribe(
+            (wisher) => {
+              this.wisher.next(wisher);
+              var friends: Friend[] | null = null;
+              if (wisher && wisher.friends) {
+                friends = wisher.friends.filter((friend) => !friend.pending);
+                this.friends.next(friends);
+              }
+            }
+          );
         })
       )
       .subscribe(); //giusto fare qui la subscribe? o va fatta quando si istanzia un certo componente?
   }
 
-  updateWisher(wish: Wish) {
+  addWish(wish: Wish) {
     var wisher = this.wisher.value;
     const dbKey = wisher ? wisher.dbKey : null;
-    if (wisher && dbKey) {
+    if (
+      wisher &&
+      dbKey &&
+      ((wisher.wishes &&
+        !wisher.wishes.find((item) => item.title === wish.title)) ||
+        !wisher.wishes)
+    ) {
       if (wisher.wishes) {
         wisher.wishes.push(wish);
       } else {
@@ -114,8 +149,34 @@ export class ServiceService {
     }
   }
 
+  deleteWish(wish: Wish) {
+    var wisher = this.wisher.value;
+    const dbKey = wisher ? wisher.dbKey : null;
+    if (
+      wisher &&
+      dbKey &&
+      wisher.wishes &&
+      wisher.wishes.find((item) => item.title === wish.title)
+    ) {
+      let index = wisher.wishes.indexOf(
+        wisher.wishes.find((item) => item.title === wish.title)!
+      );
+      wisher.wishes.splice(index, 1);
+      const body = { [<string>dbKey]: wisher };
+      this.http
+        .patch<{ [dynamicKey: string]: Wisher }>(
+          'https://lc-secret-santa-default-rtdb.europe-west1.firebasedatabase.app/wishers.json',
+          body
+        )
+        .subscribe((resp) => {
+          const wisher = resp[dbKey];
+          this.wisher.next(wisher);
+        });
+    }
+  }
+
   takeUntakeWish(take: boolean, wishIndex: number, friend: Wisher) {
-    if (friend.wishes && this.wisher.value) {
+    if (friend.wishes && this.wisher.value && friend.dbKey) {
       if (take) {
         friend.wishes[wishIndex].taken = true;
         friend.wishes[wishIndex].taker = this.wisher.value.username;
@@ -133,62 +194,260 @@ export class ServiceService {
     }
   }
 
-  getWisherAndFriends(wisherUsername: string) {
-    this.http
+  getPeople(wisherUsername: string): Observable<Person[] | null> {
+    return this.http
       .get<{ [dynamicKey: string]: Wisher } | null>(
         'https://lc-secret-santa-default-rtdb.europe-west1.firebasedatabase.app/wishers.json'
       )
       .pipe(
-        map((resp) => {
-          if (!resp) {
+        map((res) => {
+          if (!res) {
             return null;
           }
-          return Object.entries(<{ [dynamicKey: string]: Wisher }>resp);
-        })
-      )
-      .subscribe((resp) => {
-        //con la risposta definisco il wisher...
-        var wisher: Wisher | null = null;
-        if (!resp) {
-          wisher = null; //se non esistono wishers, ritorno null
-        } else if (resp && resp.length === 1) {
-          if (resp[0][1].username === wisherUsername) {
-            wisher = resp[0][1];
-            wisher.dbKey = resp[0][0]; //se esiste uno wisher ed è quello giusto, lo ritorno
-          } else {
-            wisher = null; //se esite uno wisher ma non è quello giusto, ritorno null
+          var resp = Object.entries(<{ [dynamicKey: string]: Wisher }>res);
+          var wishers: Wisher[] | null = null;
+          if (!resp) {
+            wishers = null; //se non esistono wishers, ritorno null
+          } else if (resp && resp.length === 1) {
+            wishers = null; //se esiste un solo wisher o è se stesso e quindi non un amico, oppure è un altro e non va bene, perchè ci deve essere anche sè stesso
           }
-        }
-        //ultimo caso: trasformo da oggetto ad array
-        else if (resp && resp.length > 1) {
-          const rightWisher = resp
-            .map((item) => {
-              return { ...item[1], dbKey: item[0] };
-            })
-            .find((wisher) => wisher.username === wisherUsername);
-          wisher = !!rightWisher ? rightWisher : null; //se esitono più wisher e c'è quello giusto, ritorno quello, altrimenti se ci sono più wisher ma non c'è quello giusto ritorno null
-        }
-        this.wisher.next(wisher);
+          //ultimo caso: trasformo da oggetto ad array
+          else if (resp && resp.length > 1) {
+            wishers = resp
+              .map((item) => {
+                return { ...item[1], dbKey: item[0] };
+              })
+              .filter(
+                (wisher) => wisher.username !== wisherUsername //l'ultima possibilità è ci sia effettivamente un array, allora sicuramente qualcosa deve tornare e posso filtrarlo per tutti quelli che non sono il wisher loggato
+              );
+          }
+          if (wishers) {
+            wishers.map((wisher) => {
+              wisher.username, wisher.dbKey;
+            });
+          }
+          return wishers;
+        })
+      );
+  }
 
-        //...e i friends
-        var friends: Wisher[] | null = null;
-        if (!resp) {
-          friends = null; //se non esistono wishers, ritorno null
-        } else if (resp && resp.length === 1) {
-          friends = null; //se esiste un solo wisher o è se stesso e quindi non un amico, oppure è un altro e non va bene, perchè ci deve essere anche sè stesso
-        }
-        //ultimo caso: trasformo da oggetto ad array
-        else if (resp && resp.length > 1) {
-          friends = resp
-            .map((item) => {
-              return { ...item[1], dbKey: item[0] };
-            })
-            .filter(
-              (wisher) => wisher.username !== wisherUsername //l'ultima possibilità è ci sia effettivamente un array, allora sicuramente qualcosa deve tornare e posso filtrarlo per tutti quelli che non sono il wisher loggato
+  getWisher(wisherUsername: string): Observable<Wisher | null> {
+    return this.http
+      .get<{ [dynamicKey: string]: Wisher } | null>(
+        'https://lc-secret-santa-default-rtdb.europe-west1.firebasedatabase.app/wishers.json'
+      )
+      .pipe(
+        map((res) => {
+          if (!res) {
+            return null;
+          }
+          var resp = Object.entries(<{ [dynamicKey: string]: Wisher }>res);
+          var wisher: Wisher | null = null;
+          if (!resp) {
+            wisher = null; //se non esistono wishers, ritorno null
+          } else if (resp && resp.length === 1) {
+            if (resp[0][1].username === wisherUsername) {
+              wisher = resp[0][1];
+              wisher.dbKey = resp[0][0]; //se esiste uno wisher ed è quello giusto, lo ritorno
+            } else {
+              wisher = null; //se esite uno wisher ma non è quello giusto, ritorno null
+            }
+          }
+          //ultimo caso: trasformo da oggetto ad array
+          else if (resp && resp.length > 1) {
+            const rightWisher = resp
+              .map((item) => {
+                return { ...item[1], dbKey: item[0] };
+              })
+              .find((wisher) => wisher.username === wisherUsername);
+            wisher = !!rightWisher ? rightWisher : null; //se esitono più wisher e c'è quello giusto, ritorno quello, altrimenti se ci sono più wisher ma non c'è quello giusto ritorno null
+          }
+          return wisher;
+        })
+      );
+  }
+
+  sendRequest(to: Wisher) {
+    var from = this.wisher.value;
+    const fromDbKey = from ? from.dbKey : null;
+    const toDbKey = to.dbKey ? to.dbKey : null;
+    if (from && fromDbKey && toDbKey) {
+      if (from.friends) {
+        from.friends.push({
+          dbKey: toDbKey,
+          username: to.username,
+          pending: true,
+        });
+      } else {
+        from.friends = [
+          { dbKey: toDbKey, username: to.username, pending: true },
+        ];
+      }
+
+      if (to.requests) {
+        to.requests.push({ dbKey: fromDbKey, username: from.username });
+      } else {
+        to.requests = [{ dbKey: fromDbKey, username: from.username }];
+      }
+
+      const fromBody = { [<string>fromDbKey]: from };
+      const toBody = { [<string>toDbKey]: to };
+
+      this.http
+        .patch<{ [dynamicKey: string]: Wisher }>(
+          'https://lc-secret-santa-default-rtdb.europe-west1.firebasedatabase.app/wishers.json',
+          toBody
+        )
+        .subscribe((respTo) => {
+          this.http
+            .patch<{ [dynamicKey: string]: Wisher }>(
+              'https://lc-secret-santa-default-rtdb.europe-west1.firebasedatabase.app/wishers.json',
+              fromBody
+            )
+            .subscribe();
+        });
+    }
+  }
+
+  acceptRequest(fromPerson: Person) {
+    this.getWisher(fromPerson.username).subscribe((resp) => {
+      if (resp) {
+        let to = this.wisher.value;
+        let from = { ...resp };
+        const toDbKey = to ? to.dbKey : null;
+        const fromDbKey = from.dbKey ? from.dbKey : null;
+        if (to && to.username && toDbKey && fromDbKey) {
+          if (to.requests) {
+            let requestIndex = to.requests.indexOf({
+              dbKey: toDbKey,
+              username: to.username,
+            });
+            to.requests.splice(requestIndex, 1);
+            if (to.friends) {
+              to.friends.push({
+                dbKey: fromDbKey,
+                username: from.username,
+                pending: false,
+              });
+            } else {
+              to.friends = [
+                { dbKey: fromDbKey, username: from.username, pending: false },
+              ];
+            }
+          }
+
+          if (from.friends) {
+            let newFriend = from.friends.find(
+              (friend) => friend.dbKey === toDbKey
             );
+            if (newFriend) {
+              let friendIndex = from.friends.indexOf(newFriend);
+              from.friends[friendIndex].pending = false;
+            }
+          }
+
+          const toBody = { [<string>toDbKey]: to };
+          const fromBody = { [<string>fromDbKey]: from };
+
+          this.http
+            .patch<{ [dynamicKey: string]: Wisher }>(
+              'https://lc-secret-santa-default-rtdb.europe-west1.firebasedatabase.app/wishers.json',
+              toBody
+            )
+            .subscribe((respTo) => {
+              this.http
+                .patch<{ [dynamicKey: string]: Wisher }>(
+                  'https://lc-secret-santa-default-rtdb.europe-west1.firebasedatabase.app/wishers.json',
+                  fromBody
+                )
+                .pipe(
+                  tap((resp) => {
+                    if (this.wisher.value) {
+                      this.getWisher(this.wisher.value.username).subscribe(
+                        (wisher) => {
+                          this.wisher.next(wisher);
+                          var friends: Friend[] | null = null;
+                          if (wisher && wisher.friends) {
+                            friends = wisher.friends.filter(
+                              (friend) => !friend.pending
+                            );
+                            this.friends.next(friends);
+                          }
+                        }
+                      );
+                    }
+                  })
+                )
+                .subscribe();
+            });
         }
-        this.friends.next(friends);
-      });
+      }
+    });
+  }
+
+  refuseRequest(fromPerson: Person) {
+    this.getWisher(fromPerson.username).subscribe((resp) => {
+      if (resp) {
+        let to = this.wisher.value;
+        let from = { ...resp };
+        const toDbKey = to ? to.dbKey : null;
+        const fromDbKey = from.dbKey ? from.dbKey : null;
+        if (to && to.username && toDbKey && fromDbKey) {
+          if (to.requests) {
+            let requestIndex = to.requests.indexOf({
+              dbKey: toDbKey,
+              username: to.username,
+            });
+            to.requests.splice(requestIndex, 1);
+          }
+
+          if (from.friends) {
+            let newFriend = from.friends.find(
+              (friend) => friend.dbKey === toDbKey
+            );
+            if (newFriend) {
+              let friendIndex = from.friends.indexOf(newFriend);
+              from.friends.splice(friendIndex, 1);
+            }
+          }
+
+          const toBody = { [<string>toDbKey]: to };
+          const fromBody = { [<string>fromDbKey]: from };
+
+          this.http
+            .patch<{ [dynamicKey: string]: Wisher }>(
+              'https://lc-secret-santa-default-rtdb.europe-west1.firebasedatabase.app/wishers.json',
+              toBody
+            )
+            .subscribe((respTo) => {
+              this.http
+                .patch<{ [dynamicKey: string]: Wisher }>(
+                  'https://lc-secret-santa-default-rtdb.europe-west1.firebasedatabase.app/wishers.json',
+                  fromBody
+                )
+                .pipe(
+                  tap((resp) => {
+                    if (this.wisher.value) {
+                      this.getWisher(this.wisher.value.username).subscribe(
+                        (wisher) => {
+                          this.wisher.next(wisher);
+                          var friends: Friend[] | null = null;
+                          if (wisher && wisher.friends) {
+                            friends = wisher.friends.filter(
+                              (friend) => !friend.pending
+                            );
+                            this.friends.next(friends);
+                          }
+                        }
+                      );
+                    }
+                  })
+                )
+                .subscribe();
+            });
+        }
+      }
+    });
   }
 
   handleAuth(resData: AuthResponseData) {
@@ -227,7 +486,10 @@ export class ServiceService {
   }
 
   handleError(error: HttpErrorResponse) {
-    alert(error.error.error.message);
+    this.dialog.open(AlertComponent, {
+      panelClass: 'roundedModal',
+      data: error.error.error.message,
+    });
     return throwError(error);
   }
 }

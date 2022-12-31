@@ -1,0 +1,17 @@
+<p>
+  <span>{{ person.username }}</span>
+  <button
+    mat-button
+    *ngIf="isFriend(person) === 'no'"
+    (click)="sendRequest(person)"
+  >
+    aggiungi
+  </button>
+  <span *ngIf="isFriend(person) === 'yes'" class="button-like">amico</span>
+  <span *ngIf="isFriend(person) === 'pending'" class="button-like"
+    >richiesta inviata</span
+  >
+  <span *ngIf="isFriend(person) === 'request'" class="button-like"
+    >richiesta in attesa</span
+  >
+</p>
